@@ -1,0 +1,389 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#fbfbfb">
+<meta name="robots" content="noindex,nofollow">
+<title>관리자-외출기입대장</title>
+<style>
+:root{
+  --bg-main:#fbfbfb;--card:#fff;--line:#e5e8eb;--gray-fill:#f3f4f6;
+  --ink:#333d4b;--muted:#8b95a1;--blue-main:#3182f6;--blue-light:#c9e4ff;
+  --error:#f04452;--error-bg:#fed6d6;
+  --toss-spring:cubic-bezier(.16,1,.3,1);--toss-bounce:cubic-bezier(.34,1.56,.64,1);--toss-sheet:cubic-bezier(.65,0,0,1);
+  --press-in:.13s cubic-bezier(.3,.7,.25,1);--press-out:.42s cubic-bezier(.2,1.32,.4,1);
+  --panel:.52s cubic-bezier(.25,.7,.2,1);
+  --press-scale-sm:.88;--press-scale-md:.92;--press-scale-lg:.95;
+}
+@supports (transition-timing-function: linear(0, 1)) {
+      :root {
+        --press-in: 0.2s linear(0, 0.0236, 0.0821, 0.1611, 0.25, 0.3416, 0.4308, 0.5146, 0.5911, 0.6594, 0.7194, 0.7712, 0.8153, 0.8525, 0.8835, 0.909, 0.9297, 0.9465, 0.9599, 0.9705, 0.9787, 0.9851, 0.9899, 0.9935, 0.9962, 0.9981, 0.9995, 1.0004, 1.001, 1.0013, 1.0015, 1.0015, 1.0015, 1.0014, 1);      /* 감쇠 0.9 · 4.5Hz */
+        --press-out: 0.62s linear(0, 0.0244, 0.0894, 0.1832, 0.2954, 0.4168, 0.5397, 0.658, 0.7672, 0.864, 0.9467, 1.0142, 1.0667, 1.1048, 1.13, 1.1437, 1.1477, 1.1439, 1.1342, 1.1203, 1.1037, 1.0857, 1.0676, 1.0501, 1.034, 1.0198, 1.0076, 0.9977, 0.99, 0.9844, 0.9807, 0.9788, 0.9782, 0.9788, 0.9802, 0.9823, 0.9847, 0.9874, 0.9901, 0.9926, 0.995, 0.9971, 0.9989, 1.0004, 1);   /* 감쇠 0.52 · 2.6Hz (반동) */
+        --slide: 0.36s linear(0, 0.0246, 0.0844, 0.1631, 0.25, 0.338, 0.4226, 0.5012, 0.5727, 0.6363, 0.6923, 0.7409, 0.7828, 0.8187, 0.8491, 0.8748, 0.8964, 0.9145, 0.9296, 0.9421, 0.9525, 0.9611, 0.9682, 0.9741, 0.9788, 0.9828, 0.986, 0.9886, 0.9908, 0.9925, 0.9939, 0.9951, 1);           /* 감쇠 1.0 · 3.4Hz */
+        --panel: 0.6s linear(0, 0.0216, 0.0748, 0.146, 0.2258, 0.308, 0.3883, 0.4643, 0.5344, 0.5979, 0.6547, 0.7049, 0.7488, 0.787, 0.82, 0.8483, 0.8725, 0.8931, 0.9105, 0.9253, 0.9377, 0.9482, 0.9569, 0.9643, 0.9704, 0.9755, 0.9798, 0.9833, 0.9862, 0.9886, 0.9906, 0.9923, 1);            /* 감쇠 1.0 · 1.9Hz */
+        --modal: 0.34s linear(0, 0.0211, 0.0732, 0.1431, 0.2217, 0.3028, 0.3824, 0.4578, 0.5276, 0.5911, 0.6479, 0.6983, 0.7425, 0.7811, 0.8145, 0.8433, 0.8679, 0.8889, 0.9068, 0.922, 0.9348, 0.9456, 0.9547, 0.9623, 0.9687, 0.974, 0.9785, 0.9822, 0.9852, 0.9878, 0.9899, 0.9917, 0.9932, 0.9944, 1);           /* 감쇠 1.0 · 2.6Hz */
+        --toss-spring: linear(0, 0.0246, 0.0844, 0.1631, 0.25, 0.338, 0.4226, 0.5012, 0.5727, 0.6363, 0.6923, 0.7409, 0.7828, 0.8187, 0.8491, 0.8748, 0.8964, 0.9145, 0.9296, 0.9421, 0.9525, 0.9611, 0.9682, 0.9741, 0.9788, 0.9828, 0.986, 0.9886, 0.9908, 0.9925, 0.9939, 0.9951, 1);
+        --toss-sheet: linear(0, 0.0218, 0.0752, 0.1468, 0.227, 0.3094, 0.39, 0.4661, 0.5363, 0.5998, 0.6566, 0.7067, 0.7505, 0.7886, 0.8215, 0.8496, 0.8737, 0.8942, 0.9115, 0.9262, 0.9385, 0.9489, 0.9576, 0.9648, 0.9709, 0.9759, 0.9801, 0.9836, 0.9865, 0.9889, 0.9908, 0.9925, 1);
+        /* 원본 --toss-sheet은 표본 끝값이 0.9925→1로 강제 스냅되면서 마지막 프레임에서
+           속도가 순간적으로 튀어 '버벅임'으로 보임. 동일한 감쇠(임계감쇠)로 다시 표본화해
+           끝까지 감속폭이 매끄럽게 줄어들도록 보정. 바텀시트/센터모달 등장에만 사용. */
+        --sheet-enter: linear(0, 0.0388, 0.1273, 0.2365, 0.3491, 0.4557, 0.5515, 0.6348, 0.7055, 0.7643, 0.8127, 0.852, 0.8836, 0.9088, 0.9289, 0.9447, 0.9572, 0.9669, 0.9745, 0.9804, 0.9849, 0.9884, 0.9912, 0.9932, 0.9948, 0.9961, 0.997, 0.9977, 0.9983, 0.9987, 0.999, 0.9993, 0.9994, 0.9996, 0.9997, 0.9998, 1);
+        --toss-nav: linear(0, 0.0246, 0.0844, 0.1631, 0.25, 0.338, 0.4226, 0.5012, 0.5727, 0.6363, 0.6923, 0.7409, 0.7828, 0.8187, 0.8491, 0.8748, 0.8964, 0.9145, 0.9296, 0.9421, 0.9525, 0.9611, 0.9682, 0.9741, 0.9788, 0.9828, 0.986, 0.9886, 0.9908, 0.9925, 0.9939, 0.9951, 1);
+        /* 튀어오르는 모션(팝·체크 등)은 반동이 있는 스프링으로 */
+        --toss-bounce: linear(0, 0.0244, 0.0894, 0.1832, 0.2954, 0.4168, 0.5397, 0.658, 0.7672, 0.864, 0.9467, 1.0142, 1.0667, 1.1048, 1.13, 1.1437, 1.1477, 1.1439, 1.1342, 1.1203, 1.1037, 1.0857, 1.0676, 1.0501, 1.034, 1.0198, 1.0076, 0.9977, 0.99, 0.9844, 0.9807, 0.9788, 0.9782, 0.9788, 0.9802, 0.9823, 0.9847, 0.9874, 0.9901, 0.9926, 0.995, 0.9971, 0.9989, 1.0004, 1);
+      }
+    }
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent!important;touch-action:manipulation!important}
+button,input{outline:none}
+html,body{height:100dvh;overflow:hidden;overscroll-behavior-y:none}
+body{font-family:'Pretendard Variable',Pretendard,-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Noto Sans KR',sans-serif;background:var(--bg-main);color:var(--ink);display:flex;flex-direction:column;max-width:480px;margin:0 auto;-webkit-user-select:none;user-select:none}
+body.is-login{background:var(--card)}
+input{-webkit-user-select:text;user-select:text}
+.hide{display:none!important}
+
+/* header */
+header{flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:max(16px,env(safe-area-inset-top)) 24px 24px;position:relative;z-index:10;background:inherit}
+header::after{content:"";position:absolute;bottom:-24px;left:0;width:100%;height:24px;background:linear-gradient(to bottom,var(--bg-main),rgba(251,251,251,0));pointer-events:none}
+.who{line-height:1.4;display:flex;flex-direction:column}
+.who b{font-size:19px;font-weight:700;letter-spacing:-.02em}
+.who span{font-size:13px;color:var(--muted);font-weight:500;margin-top:3px}
+@keyframes dropInTop{0%{opacity:0;transform:translateY(-22px)}100%{opacity:1;transform:none}}
+header.drop>*{animation:dropInTop .6s var(--toss-sheet) backwards}
+
+/* views */
+.page{flex:1;overflow-y:auto;overflow-x:hidden;padding:24px 20px 0;display:flex;flex-direction:column;gap:32px;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain}
+.page>*{animation:fadeInUp .5s var(--toss-spring) backwards}
+.page>*:nth-child(2){animation-delay:.08s}.page>*:nth-child(3){animation-delay:.14s}.page>*:nth-child(4){animation-delay:.2s}
+@keyframes fadeInUp{0%{opacity:0;transform:translateY(20px)}100%{opacity:1;transform:none}}
+.label{font-size:16px;font-weight:700;color:var(--ink);margin-bottom:12px}
+.label small{font-size:13px;color:var(--muted);font-weight:500;margin-left:6px}
+.hint{font-size:13px;color:var(--muted);font-weight:500;line-height:1.5;margin-top:10px}
+
+/* login */
+.setup-header-row{display:flex;align-items:center;gap:18px;padding-top:16px}
+.setup-title-col h2{font-size:24px;font-weight:700;letter-spacing:-.02em;margin-bottom:6px}
+.setup-title-col p{font-size:14px;color:var(--muted);font-weight:500}
+.idcard-small{width:105px;flex-shrink:0;overflow:visible!important;filter:drop-shadow(4px 12px 24px rgba(49,130,246,.3));transform:rotate(-5deg);animation:cardFloat 4s ease-in-out infinite}
+@keyframes cardFloat{0%,100%{transform:rotate(-5deg) translateY(0)}50%{transform:rotate(-5deg) translateY(-6px)}}
+.cardshine{animation:cardSweep 4.5s ease-in-out infinite}
+@keyframes cardSweep{0%,60%{transform:translateX(-120px) skewX(-20deg)}85%,100%{transform:translateX(240px) skewX(-20deg)}}
+
+input[type=text],input[type=password]{width:100%;background:var(--gray-fill);border:1px solid transparent;border-radius:14px;padding:18px 16px;font-size:16px;font-family:inherit;color:var(--ink);font-weight:500;transition:border-color .5s ease,background-color .5s ease}
+input:focus{background:var(--card);border-color:var(--blue-main)}
+::placeholder{color:#b0b8c1;font-weight:500}
+
+/* press effect (원본과 동일) */
+.btn-simple,.chip,.mgr-item,.latelink,.stepper-btn,.cm-btn{transition:transform var(--press-out),background-color var(--press-out),border-color var(--press-out),filter var(--press-out)!important}
+.btn-simple:active,.btn-simple.pressed,.chip:active,.chip.pressed,.mgr-item:active,.mgr-item.pressed,.latelink:active,.latelink.pressed,.cm-btn:active,.cm-btn.pressed{transform:scale(var(--press-scale-lg))!important;filter:brightness(.92)!important;transition:transform var(--press-in),filter var(--press-in),background-color var(--press-in)!important}
+.stepper-btn:active,.stepper-btn.pressed{transform:scale(var(--press-scale-md))!important;filter:brightness(.92)!important;transition:transform var(--press-in),filter var(--press-in),background-color var(--press-in)!important}
+.btn-simple{border:none;cursor:pointer;font-family:inherit;border-radius:16px;font-weight:600;letter-spacing:-.01em}
+.btn-simple:disabled{opacity:.6;pointer-events:none}
+
+/* list */
+.list{display:flex;flex-direction:column;gap:4px}
+.row{display:flex;align-items:center;gap:8px}
+.mgr-item{flex:1;min-width:0;display:flex;align-items:center;gap:12px;background:transparent;border:none;border-radius:16px;padding:12px 12px;font-size:15.5px;font-weight:600;cursor:pointer;text-align:left;color:var(--ink);font-family:inherit}
+.mgr-item:active,.mgr-item.pressed{background:var(--gray-fill)}
+.mgr-item .ava{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;color:#fff;flex-shrink:0;background:linear-gradient(160deg,#9BA9D6,#7C89C4)}
+.mgr-item .icon-wrap{width:38px;height:38px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:var(--gray-fill);color:var(--blue-main);flex-shrink:0}
+.mgr-item .icon-wrap svg{width:19px;height:19px}
+.mgr-item .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mgr-item .nm small{display:block;font-size:12.5px;color:var(--muted);font-weight:500;margin-top:2px;overflow:hidden;text-overflow:ellipsis}
+.tag{flex-shrink:0;padding:4px 7px;border-radius:7px;background:var(--blue-light);color:var(--blue-main);font-size:12px;font-weight:700}
+.tag.off{background:var(--gray-fill);color:var(--muted)}
+.stepper-btn{flex:0 0 auto;width:44px;height:44px;display:flex;align-items:center;justify-content:center;background:var(--gray-fill);border:1px solid transparent;border-radius:14px;font-size:26px;font-weight:700;line-height:1;color:var(--ink);cursor:pointer;font-family:inherit}
+.stepper-btn.minus{color:var(--error)}
+.stepper-btn.plus{color:var(--blue-main)}
+.stepper-btn.wide{width:100%;height:48px;margin-top:8px;font-size:15.5px;gap:6px}
+.empty{padding:20px;text-align:center;color:var(--muted);font-size:14px;font-weight:500}
+
+/* submit */
+.submitbar{margin-top:auto;position:sticky;bottom:0;margin-left:-20px;margin-right:-20px;padding:16px 20px max(24px,env(safe-area-inset-bottom));background:inherit;z-index:100}
+.submitbar::before{content:"";position:absolute;top:-28px;left:0;width:100%;height:28px;background:linear-gradient(to top,var(--bg-main),rgba(251,251,251,0));pointer-events:none}
+.login-bar::before{background:linear-gradient(to top,var(--card),rgba(255,255,255,0))}
+.submit{width:100%;padding:16px;font-size:17px;border-radius:16px;background:var(--blue-main);color:#fff;font-weight:700;position:relative;overflow:hidden}
+.submit.danger{background:var(--error)}
+.submit.sending {
+      color: transparent !important;
+      pointer-events: none;
+      filter: brightness(0.85) !important;
+      opacity: 1 !important;
+    }
+
+    .submit.sending::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 58px;
+      height: 14px;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 58 14'%3E%3Cstyle%3Ecircle%7Bfill:%23fff;animation:p 1.2s infinite ease-in-out%7D.c2%7Banimation-delay:.2s%7D.c3%7Banimation-delay:.4s%7D%40keyframes p%7B0%25,100%25%7Br:3.5px;opacity:.3%7D50%25%7Br:5.5px;opacity:1%7D%7D%3C/style%3E%3Ccircle cx='9' cy='7' r='3.5' class='c1'/%3E%3Ccircle cx='29' cy='7' r='3.5' class='c2'/%3E%3Ccircle cx='49' cy='7' r='3.5' class='c3'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: center;
+    }
+.latelink{width:fit-content;background:transparent;border:none;border-radius:10px;color:var(--muted);font-size:14px;font-weight:600;padding:6px 12px;cursor:pointer;font-family:inherit}
+.latelink:active,.latelink.pressed{background-color:rgba(0,0,0,.12)!important}
+.latelink.out{color:var(--ink)}
+.dirty-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--error);margin-left:8px;vertical-align:middle;opacity:0;transition:opacity .3s}
+.dirty .dirty-dot{opacity:1}
+
+/* toast / error */
+.toast{position:fixed;top:0;left:50%;transform:translate3d(-50%,-100px,0);background:rgba(51,61,75,.9);color:#fff;padding:14px 24px;border-radius:30px;font-size:15px;font-weight:600;z-index:10000;box-shadow:0 8px 16px rgba(0,0,0,.15);white-space:nowrap;pointer-events:none;opacity:0;transition:transform var(--panel),opacity .3s}
+.toast.show{transform:translate3d(-50%,max(24px,env(safe-area-inset-top)),0);opacity:1}
+@keyframes tossShake{0%,100%{transform:translateX(0)}15%{transform:translateX(-6px)}30%{transform:translateX(6px)}45%{transform:translateX(-4px)}60%{transform:translateX(4px)}75%{transform:translateX(-2px)}85%{transform:translateX(1px)}}
+.err{animation:tossShake .45s cubic-bezier(.36,.07,.19,.97) both!important;border-color:var(--error)!important;background-color:var(--error-bg)!important;transition:background-color .2s ease,border-color .2s ease!important}
+@keyframes cmShake{0%,100%{transform:translate(-50%,-50%)}15%{transform:translate(calc(-50% - 6px),-50%)}30%{transform:translate(calc(-50% + 6px),-50%)}45%{transform:translate(calc(-50% - 4px),-50%)}60%{transform:translate(calc(-50% + 4px),-50%)}80%{transform:translate(calc(-50% - 2px),-50%)}}
+.err-shake{animation:cmShake .45s cubic-bezier(.36,.07,.19,.97) both!important}
+
+/* bottom sheet */
+.bottom-sheet-overlay{position:fixed;inset:0;background:rgba(0,0,0,.30);backdrop-filter:blur(0);-webkit-backdrop-filter:blur(0);z-index:1100;opacity:0;visibility:hidden;transition:opacity .45s cubic-bezier(.45,0,.55,1),visibility .45s ease,backdrop-filter .18s ease}
+.bottom-sheet-overlay.show{opacity:1;visibility:visible;backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);transition:opacity .32s cubic-bezier(.45,0,.55,1),visibility .32s ease,backdrop-filter .32s ease}
+.bottom-sheet{position:fixed;bottom:max(12px,env(safe-area-inset-bottom));left:11px;width:calc(100% - 22px);max-width:458px;margin:0 auto;right:11px;background:var(--bg-main);border-radius:22px;z-index:1101;padding:32px 18px 21px;opacity:0;transform:translate3d(0,120%,0) scale(1.05);visibility:hidden;transition:transform .45s cubic-bezier(.3,0,.1,1),opacity .35s ease,visibility .45s ease;display:flex;flex-direction:column;gap:18px;box-shadow:0 12px 40px rgba(0,0,0,.15)}
+.bottom-sheet.show{opacity:1;transform:translate3d(0,0,0) scale(1);visibility:visible;transition:transform .32s cubic-bezier(.2,.8,.2,1),opacity .2s ease,visibility .32s ease}
+.bottom-sheet::before{content:'';position:absolute;top:12px;left:50%;transform:translateX(-50%);width:40px;height:4px;background:var(--line);border-radius:2px}
+.bs-header{display:flex;justify-content:center;margin-bottom:2px}
+.bs-header h3{font-size:20px;font-weight:700}
+@keyframes sheetItemFadeIn{0%{opacity:0;transform:translateY(16px)}100%{opacity:1;transform:none}}
+.bottom-sheet.show .bs-header{animation:sheetItemFadeIn .4s cubic-bezier(.2,0,0,1) backwards}
+.bottom-sheet.show .fld{animation:sheetItemFadeIn .4s cubic-bezier(.2,0,0,1) backwards}
+.bottom-sheet.show .fld:nth-child(1){animation-delay:.03s}.bottom-sheet.show .fld:nth-child(2){animation-delay:.06s}.bottom-sheet.show .fld:nth-child(3){animation-delay:.09s}.bottom-sheet.show .fld:nth-child(4){animation-delay:.12s}
+.fld .label{font-size:14px;margin-bottom:8px}
+.chips{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.chip{background:var(--gray-fill);border:none;border-radius:14px;padding:16px 8px;font-size:15px;font-weight:500;cursor:pointer;color:var(--muted);font-family:inherit;transition:all .2s var(--toss-spring)}
+.chip.sel{background:var(--blue-light);color:var(--blue-main);font-weight:700}
+
+/* center modal */
+.center-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);backdrop-filter:blur(0);-webkit-backdrop-filter:blur(0);z-index:1200;opacity:0;visibility:hidden;transition:opacity .3s cubic-bezier(.45,0,.55,1),visibility .3s ease,backdrop-filter .15s ease}
+.center-modal-overlay.show{opacity:1;visibility:visible;backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);transition:opacity .35s cubic-bezier(.45,0,.55,1),visibility .35s ease,backdrop-filter .35s ease}
+.center-modal{position:fixed;left:50%;top:50%;width:calc(100% - 56px);max-width:344px;background:var(--card);border-radius:20px;padding:26px 20px 18px;z-index:1201;display:flex;flex-direction:column;gap:14px;box-shadow:0 20px 50px rgba(0,0,0,.18);opacity:0;visibility:hidden;transform:translate(-50%,-50%) translateY(260px);transition:transform .45s cubic-bezier(.3,0,.1,1),opacity .35s ease,visibility .45s ease}
+.center-modal.show{opacity:1;visibility:visible;transform:translate(-50%,-50%) translateY(0);transition:transform .32s cubic-bezier(.2,.8,.2,1),opacity .2s ease,visibility .32s ease}
+.cm-title{font-size:22px;font-weight:700;letter-spacing:-.02em;line-height:1.35}
+.cm-desc{font-size:14px;font-weight:500;color:var(--muted);line-height:1.55}
+.cm-desc b{color:#4e5968;font-weight:700}
+.cm-actions{display:flex;gap:8px;margin-top:4px}
+.cm-btn{flex:1 1 0;min-width:0;border:none;border-radius:12px;padding:15px 8px;font-size:15.5px;font-weight:700;font-family:inherit;cursor:pointer;letter-spacing:-.02em}
+.cm-btn.ghost{background:var(--gray-fill);color:var(--ink)}
+.cm-actions .submit{width:auto;flex:1 1 0;min-width:0;padding:15px 8px;font-size:15.5px;border-radius:12px}
+</style>
+</head>
+<body class="is-login" ontouchstart="">
+<div class="toast" id="toast"></div>
+
+<header class="hide" id="hdr">
+  <div class="who"><b>관리자</b><span>외출기입대장 설정</span></div>
+  <button type="button" class="latelink out" id="btnLogout">로그아웃</button>
+</header>
+
+<!-- 로그인 -->
+<main class="page" id="loginView" style="background:var(--card)">
+  <div class="setup-header-row">
+    <svg class="idcard-small" viewBox="-15 -10 210 136" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <defs><linearGradient id="cb" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#fbfbfb"/></linearGradient><clipPath id="cc"><rect x="2" y="2" width="176" height="112" rx="14"/></clipPath></defs>
+      <rect x="2" y="2" width="176" height="112" rx="14" fill="url(#cb)" stroke="#e5e8eb" stroke-width="2"/><rect x="2" y="2" width="176" height="32" rx="14" fill="#3182f6" clip-path="url(#cc)"/><rect x="2" y="24" width="176" height="10" fill="#3182f6" clip-path="url(#cc)"/>
+      <text x="14" y="22" font-size="12" font-weight="700" fill="#fff" letter-spacing="1">EPX ADMIN</text>
+      <rect x="14" y="46" width="26" height="18" rx="4" fill="#c9e4ff" stroke="#9cc9ff" stroke-width="1.5"/><circle cx="150" cy="64" r="16" fill="#e5e8eb"/><circle cx="150" cy="59" r="5" fill="#8b95a1"/><path d="M141 72a9 7 0 0 1 18 0" fill="#8b95a1"/><rect x="14" y="76" width="60" height="6" rx="3" fill="#b0b8c1"/><rect x="14" y="88" width="40" height="4" rx="2" fill="#e5e8eb"/>
+      <g clip-path="url(#cc)"><rect class="cardshine" x="-30" y="-10" width="50" height="150" fill="#fff" opacity=".7" transform="skewX(-20)"/></g>
+    </svg>
+    <div class="setup-title-col"><h2>관리자 로그인</h2><p>비밀번호를 입력해주세요.</p></div>
+  </div>
+  <div><div class="label">비밀번호</div><input type="password" id="pw" placeholder="비밀번호" autocomplete="current-password"></div>
+  <div class="submitbar login-bar"><button type="button" class="btn-simple submit" id="btnLogin">로그인</button></div>
+</main>
+
+<!-- 관리 -->
+<main class="page hide" id="adminView">
+  <div>
+    <div class="label">담당 매니저<small id="mCnt"></small></div>
+    <div class="list" id="mgrRows"></div>
+    <button type="button" class="stepper-btn plus wide" id="addMgr">＋ 매니저 추가</button>
+  </div>
+  <div>
+    <div class="label">연결된 스프레드시트<small id="sCnt"></small></div>
+    <div class="list" id="sheetRows"></div>
+    <button type="button" class="stepper-btn plus wide" id="addSheet">＋ 스프레드시트 추가</button>
+    <p class="hint">'사용 중'인 시트에서 외출 기록을 조회해요. 시트는 '링크가 있는 모든 사용자 – 뷰어'로 공유되어 있어야 해요.</p>
+  </div>
+  <div class="submitbar" id="saveBar"><button type="button" class="btn-simple submit" id="btnSave">저장하기<span class="dirty-dot"></span></button></div>
+</main>
+
+<!-- 편집 시트 -->
+<div class="bottom-sheet-overlay" id="shOv"></div>
+<div class="bottom-sheet" id="sh">
+  <div class="bs-header"><h3 id="shTitle"></h3></div>
+  <div id="shBody" style="display:flex;flex-direction:column;gap:18px"></div>
+  <button type="button" class="btn-simple submit" id="shOk">확인</button>
+</div>
+
+<!-- 삭제 확인 -->
+<div class="center-modal-overlay" id="dlOv"></div>
+<div class="center-modal" id="dl">
+  <div class="cm-title">삭제할까요?</div>
+  <div class="cm-desc" id="dlDesc"></div>
+  <div class="cm-actions">
+    <button type="button" class="btn-simple cm-btn ghost" id="dlNo">취소</button>
+    <button type="button" class="btn-simple submit danger" id="dlYes">삭제</button>
+  </div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let token=''; try{token=sessionStorage.getItem('adm_tk')||''}catch(e){}
+let cfg={managers:[],sheets:[]}, dirty=false, saving=false, edit=null, delTarget=null, sheetActive=true;
+
+/* ---------- press feedback (원본 동일) ---------- */
+(function(){
+  const SEL='.btn-simple,.chip,.mgr-item,.latelink,.stepper-btn,.cm-btn';
+  let el=null,t0=0,sx=0,sy=0;
+  const clear=()=>{if(el){el.classList.remove('pressed');el=null}};
+  document.addEventListener('touchstart',e=>{const x=e.target.closest(SEL);clear();if(!x||x.disabled)return;el=x;t0=Date.now();sx=e.touches[0].clientX;sy=e.touches[0].clientY;x.classList.add('pressed')},{passive:true});
+  document.addEventListener('touchmove',e=>{if(!el)return;if(Math.abs(e.touches[0].clientX-sx)>10||Math.abs(e.touches[0].clientY-sy)>10)clear()},{passive:true});
+  document.addEventListener('touchend',()=>{if(!el)return;const x=el;el=null;const w=Math.max(0,170-(Date.now()-t0));setTimeout(()=>x.classList.remove('pressed'),w)},{passive:true});
+  document.addEventListener('touchcancel',clear,{passive:true});
+})();
+
+/* ---------- helpers ---------- */
+let tt;function toast(m){const e=$('toast');e.textContent=m;e.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>e.classList.remove('show'),2000)}
+function shake(e){e.classList.remove('err');void e.offsetWidth;e.classList.add('err');e.addEventListener('animationend',()=>{e.style.transition='background-color .35s ease,border-color .35s ease';e.classList.remove('err');e.addEventListener('transitionend',()=>{e.style.transition=''},{once:true})},{once:true})}
+function shakeModal(e){e.classList.remove('err-shake');void e.offsetWidth;e.classList.add('err-shake');e.addEventListener('animationend',()=>e.classList.remove('err-shake'),{once:true})}
+function api(body){
+  return fetch('/api/config',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify(body)})
+    .then(async r=>{const j=await r.json().catch(()=>({}));if(!r.ok)throw Object.assign(new Error(j.error||'오류가 발생했어요'),{status:r.status});return j});
+}
+function busy(btn,on){btn.disabled=on;btn.classList.toggle('sending',on)}
+function setDirty(v){dirty=v;$('saveBar').classList.toggle('dirty',v)}
+const ch=n=>{const c=n.replace(/[^가-힣a-zA-Z]/g,'');return c?c[0]:'?'};
+const SHEET_ICON='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 9h18M3 15h18M9 3v18"/></svg>';
+
+/* ---------- screens ---------- */
+function showAdmin(){
+  document.body.classList.remove('is-login');
+  $('loginView').classList.add('hide');$('hdr').classList.remove('hide');$('hdr').classList.add('drop');
+  $('adminView').classList.remove('hide');
+}
+function showLogin(){
+  token='';try{sessionStorage.removeItem('adm_tk')}catch(e){}
+  document.body.classList.add('is-login');
+  $('adminView').classList.add('hide');$('hdr').classList.add('hide');$('loginView').classList.remove('hide');$('pw').value='';
+}
+function load(){
+  return fetch('/api/config',{cache:'no-store'}).then(r=>r.json()).then(c=>{cfg={managers:c.managers||[],sheets:c.sheets||[]};setDirty(false);render()});
+}
+function render(){
+  $('mCnt').textContent=cfg.managers.length+'명';
+  $('sCnt').textContent=cfg.sheets.length+'개';
+  $('mgrRows').innerHTML=cfg.managers.length?cfg.managers.map((m,i)=>
+    `<div class="row"><button type="button" class="mgr-item" data-e="m${i}"><span class="ava">${esc(ch(m))}</span><span class="nm">${esc(m)}</span></button><button type="button" class="stepper-btn minus" data-d="m${i}" aria-label="삭제">−</button></div>`).join('')
+    :'<div class="empty">등록된 매니저가 없어요</div>';
+  $('sheetRows').innerHTML=cfg.sheets.length?cfg.sheets.map((s,i)=>
+    `<div class="row"><button type="button" class="mgr-item" data-e="s${i}"><span class="icon-wrap">${SHEET_ICON}</span><span class="nm">${esc(s.name||'이름 없음')}<small>${esc(s.id)}${s.gid?' · gid '+esc(s.gid):''}</small></span><span class="tag${s.active?'':' off'}">${s.active?'사용 중':'중지'}</span></button><button type="button" class="stepper-btn minus" data-d="s${i}" aria-label="삭제">−</button></div>`).join('')
+    :'<div class="empty">연결된 스프레드시트가 없어요</div>';
+}
+
+/* ---------- login / logout / save ---------- */
+function doLogin(){
+  const pw=$('pw').value;
+  if(!pw){shake($('pw'));toast('비밀번호를 입력해주세요');return}
+  if(document.activeElement&&document.activeElement.blur)document.activeElement.blur();
+  busy($('btnLogin'),true);
+  fetch('/api/config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'login',password:pw})})
+    .then(async r=>{const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error||'로그인에 실패했어요');return j})
+    .then(j=>{token=j.token;try{sessionStorage.setItem('adm_tk',token)}catch(e){}return load()})
+    .then(()=>{busy($('btnLogin'),false);showAdmin()})
+    .catch(e=>{busy($('btnLogin'),false);shake($('pw'));toast(e.message)});
+}
+$('btnLogin').onclick=doLogin;
+$('pw').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin()});
+$('btnLogout').onclick=()=>{showLogin()};
+
+$('btnSave').onclick=()=>{
+  if(saving)return;
+  if(!dirty){toast('변경사항이 없어요');return}
+  saving=true;busy($('btnSave'),true);
+  api({action:'save',config:cfg}).then(c=>{
+    cfg={managers:c.managers,sheets:c.sheets};render();setDirty(false);toast('저장했어요');
+  }).catch(e=>{
+    toast(e.message);if(e.status===401)setTimeout(showLogin,900);
+  }).finally(()=>{saving=false;busy($('btnSave'),false)});
+};
+
+/* ---------- 편집 시트 ---------- */
+function openSheet(){ $('shOv').classList.add('show');requestAnimationFrame(()=>$('sh').classList.add('show')) }
+function closeSheet(){ if(document.activeElement&&document.activeElement.blur)document.activeElement.blur();$('shOv').classList.remove('show');$('sh').classList.remove('show');edit=null }
+$('shOv').onclick=closeSheet;
+
+function editMgr(i){
+  edit={t:'m',i};
+  $('shTitle').textContent=i<0?'매니저 추가':'매니저 수정';
+  $('shBody').innerHTML=`<div class="fld"><div class="label">이름</div><input type="text" id="fName" placeholder="예) 김소희Ⓜ️" autocomplete="off" value="${i<0?'':esc(cfg.managers[i])}"></div>`;
+  openSheet();
+}
+function editSheet(i){
+  const s=i<0?{name:'',id:'',gid:'',active:true}:cfg.sheets[i];
+  edit={t:'s',i};sheetActive=s.active;
+  $('shTitle').textContent=i<0?'스프레드시트 추가':'스프레드시트 수정';
+  $('shBody').innerHTML=
+   `<div class="fld"><div class="label">이름</div><input type="text" id="fName" placeholder="예) 2026 응답 시트" autocomplete="off" value="${esc(s.name)}"></div>`+
+   `<div class="fld"><div class="label">시트 주소 또는 ID</div><input type="text" id="fId" placeholder="https://docs.google.com/spreadsheets/d/…" autocomplete="off" value="${esc(s.id)}"></div>`+
+   `<div class="fld"><div class="label">탭 gid <small style="font-size:12px;color:var(--muted);font-weight:500">(선택)</small></div><input type="text" id="fGid" inputmode="numeric" placeholder="비우면 첫 번째 탭" autocomplete="off" value="${esc(s.gid)}"></div>`+
+   `<div class="fld"><div class="label">조회에 사용</div><div class="chips" id="fAct"><button type="button" class="chip${s.active?' sel':''}" data-v="1">사용 중</button><button type="button" class="chip${s.active?'':' sel'}" data-v="0">중지</button></div></div>`;
+  openSheet();
+}
+$('shBody').addEventListener('click',e=>{
+  const c=e.target.closest('#fAct .chip');if(!c)return;
+  sheetActive=c.dataset.v==='1';
+  document.querySelectorAll('#fAct .chip').forEach(x=>x.classList.toggle('sel',x===c));
+});
+$('shOk').onclick=()=>{
+  if(!edit)return;
+  const nameEl=$('fName'),name=nameEl.value.trim();
+  if(edit.t==='m'){
+    if(!name){shake(nameEl);toast('이름을 입력해주세요');return}
+    if(cfg.managers.some((m,k)=>m===name&&k!==edit.i)){shake(nameEl);toast('이미 있는 매니저예요');return}
+    if(edit.i<0)cfg.managers.push(name);else cfg.managers[edit.i]=name;
+  }else{
+    const raw=$('fId').value.trim();
+    const m=/\/d\/([\w-]+)/.exec(raw),id=m?m[1]:raw;
+    const g=/[#&?]gid=(\d+)/.exec(raw);
+    let gid=$('fGid').value.trim();if(!gid&&g)gid=g[1];
+    if(!name){shake(nameEl);toast('이름을 입력해주세요');return}
+    if(!/^[\w-]{20,}$/.test(id)){shake($('fId'));toast('올바른 시트 주소(ID)를 입력해주세요');return}
+    if(!/^\d*$/.test(gid)){shake($('fGid'));toast('gid는 숫자만 입력해주세요');return}
+    const item={name,id,gid,active:sheetActive};
+    if(edit.i<0)cfg.sheets.push(item);else cfg.sheets[edit.i]=item;
+  }
+  setDirty(true);render();closeSheet();
+};
+$('addMgr').onclick=()=>editMgr(-1);
+$('addSheet').onclick=()=>editSheet(-1);
+
+/* ---------- 목록 클릭 / 삭제 ---------- */
+document.addEventListener('click',e=>{
+  const ed=e.target.closest('[data-e]');
+  if(ed){const k=ed.dataset.e;(k[0]==='m'?editMgr:editSheet)(+k.slice(1));return}
+  const dl=e.target.closest('[data-d]');
+  if(dl){
+    const k=dl.dataset.d,i=+k.slice(1),isM=k[0]==='m';
+    if(isM&&cfg.managers.length<=1){toast('매니저는 1명 이상 필요해요');return}
+    delTarget={isM,i};
+    const nm=isM?cfg.managers[i]:(cfg.sheets[i].name||cfg.sheets[i].id);
+    $('dlDesc').innerHTML=`<b>${esc(nm)}</b> 항목을 목록에서 지워요.<br>저장하기를 눌러야 실제로 반영돼요.`;
+    $('dlOv').classList.add('show');$('dl').classList.add('show');
+  }
+});
+function closeDel(){$('dlOv').classList.remove('show');$('dl').classList.remove('show');delTarget=null}
+$('dlNo').onclick=closeDel;$('dlOv').onclick=closeDel;
+$('dlYes').onclick=()=>{
+  if(!delTarget)return;
+  (delTarget.isM?cfg.managers:cfg.sheets).splice(delTarget.i,1);
+  setDirty(true);render();closeDel();
+};
+
+/* ---------- start ---------- */
+if(token){load().then(showAdmin).catch(showLogin)}
+document.addEventListener('contextmenu',e=>e.preventDefault());
+</script>
+</body>
+</html>
