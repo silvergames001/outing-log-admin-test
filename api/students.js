@@ -33,7 +33,8 @@ function okToken(t) {
 }
 const cut = (s, n) => String(s || '').trim().slice(0, n);
 const T = /^([01]\d|2[0-3]):[0-5]\d$/;
-const cleanWins = (a) => (Array.isArray(a) ? a : []).filter(w => w && T.test(w.s) && T.test(w.e) && w.s !== w.e).slice(0, 8).map(w => ({ s: w.s, e: w.e }));
+// 시작=종료는 '무기한'(00:00~00:00) 표시일 때만 허용
+const cleanWins = (a) => (Array.isArray(a) ? a : []).filter(w => w && T.test(w.s) && T.test(w.e) && (w.s !== w.e || w.s === '00:00')).slice(0, 8).map(w => ({ s: w.s, e: w.e }));
 const fmtWins = (w) => w.length ? w.map(x => x.s + '~' + x.e).join(', ') : '제한 없음';
 const wOf = (g, r) => (g.wins || []).concat((r && r.wins) || []);
 
