@@ -79,9 +79,9 @@ input:focus{background:var(--card);border-color:var(--blue-main)}
 ::placeholder{color:#b0b8c1;font-weight:500}
 
 /* press effect (원본과 동일) */
-.btn-simple,.chip,.mgr-item,.latelink,.stepper-btn,.cm-btn{transition:transform var(--press-out),background-color var(--press-out),border-color var(--press-out),filter var(--press-out)!important}
+.btn-simple,.chip,.mgr-item,.latelink,.stepper-btn,.rbtn,.cm-btn{transition:transform var(--press-out),background-color var(--press-out),border-color var(--press-out),filter var(--press-out)!important}
 .btn-simple:active,.btn-simple.pressed,.chip:active,.chip.pressed,.mgr-item:active,.mgr-item.pressed,.latelink:active,.latelink.pressed,.cm-btn:active,.cm-btn.pressed{transform:scale(var(--press-scale-lg))!important;filter:brightness(.92)!important;transition:transform var(--press-in),filter var(--press-in),background-color var(--press-in)!important}
-.stepper-btn:active,.stepper-btn.pressed{transform:scale(var(--press-scale-md))!important;filter:brightness(.92)!important;transition:transform var(--press-in),filter var(--press-in),background-color var(--press-in)!important}
+.stepper-btn:active,.stepper-btn.pressed,.rbtn:active,.rbtn.pressed{transform:scale(var(--press-scale-md))!important;filter:brightness(.92)!important;transition:transform var(--press-in),filter var(--press-in),background-color var(--press-in)!important}
 .btn-simple{border:none;cursor:pointer;font-family:inherit;border-radius:16px;font-weight:600;letter-spacing:-.01em}
 .btn-simple:disabled{opacity:.6;pointer-events:none}
 
@@ -103,7 +103,38 @@ input:focus{background:var(--card);border-color:var(--blue-main)}
 .stepper-btn.minus{color:var(--error)}
 .stepper-btn.plus{color:var(--blue-main)}
 .stepper-btn.wide{width:100%;height:48px;margin-top:8px;font-size:15.5px;gap:6px}
-.empty{padding:20px;text-align:center;color:var(--muted);font-size:14px;font-weight:500}
+.empty{padding:20px;text-align:center;color:var(--muted);font-size:14px;font-weight:500;grid-column:1/-1}
+
+/* 학생 카드 (한 줄 3명) */
+.stu-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:8px}
+.stu{position:relative;min-height:164px;display:flex;flex-direction:column;background:var(--gray-fill);border:2px solid transparent;border-radius:18px;padding:10px 8px 8px 10px;overflow:hidden;transition:background-color .3s ease,border-color .3s ease}
+.stu-top{flex:1;min-height:0;display:flex;align-items:flex-start;justify-content:space-between;gap:6px}
+.stu-info{flex:1;min-width:0;display:flex;flex-direction:column;align-items:flex-start}
+.stu-ava{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:700;color:#fff;flex-shrink:0;margin-bottom:8px;background:linear-gradient(160deg,#9BA9D6,#7C89C4);transition:background .3s ease,color .3s ease}
+.stu-nm{max-width:100%;font-size:15px;font-weight:700;color:var(--ink);letter-spacing:-.02em;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.stu-sub{max-width:100%;font-size:11.5px;font-weight:500;color:var(--muted);line-height:1.4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.stu-btns{flex-shrink:0;display:flex;flex-direction:column;gap:6px}
+.rbtn{width:32px;height:32px;padding:0;border:none;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--card);color:var(--ink);cursor:pointer;font-family:inherit;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+.rbtn svg{width:17px;height:17px}
+.rbtn.del{color:var(--error)}
+.rbtn.lg{color:var(--blue-main)}
+.stu-st{flex-shrink:0;min-height:28px;margin-top:8px;margin-right:2px;padding:4px 4px;border-radius:10px;display:flex;align-items:center;justify-content:center;text-align:center;background:var(--card);color:var(--muted);font-size:13px;font-weight:700;letter-spacing:-.03em;line-height:1.25;word-break:keep-all}
+/* 밴(차단): 빨간 테두리 + 검붉은 카드 */
+.stu.ban{background:linear-gradient(180deg,#4a0f14 0%,#701a21 100%);border-color:var(--error)}
+.stu.ban .stu-nm{color:#fff}
+.stu.ban .stu-sub{color:rgba(255,255,255,.62)}
+.stu.ban .stu-ava{background:#350a0e;color:rgba(255,255,255,.32)}
+.stu.ban .rbtn{background:rgba(0,0,0,.32);color:#ffb3b9;box-shadow:none}
+.stu.ban .rbtn.bn{background:#2b080b;color:#ff5a66;box-shadow:0 0 0 2px var(--error)}
+.stu.ban .stu-st{background:rgba(0,0,0,.3);color:#fff;font-size:14px;font-weight:800}
+/* 일시 제한: 노란색, 같은 스타일 */
+.stu.tmp{background:linear-gradient(180deg,#5e4700 0%,#8a6a00 100%);border-color:#ffd23f}
+.stu.tmp .stu-nm{color:#fff}
+.stu.tmp .stu-sub{color:rgba(255,255,255,.7)}
+.stu.tmp .stu-ava{background:#443400;color:rgba(255,255,255,.36)}
+.stu.tmp .rbtn{background:rgba(0,0,0,.28);color:#ffe28a;box-shadow:none}
+.stu.tmp .rbtn.bn{background:#2e2200;color:#ffd23f;box-shadow:0 0 0 2px #ffd23f}
+.stu.tmp .stu-st{background:rgba(0,0,0,.28);color:#fff;font-size:14px;font-weight:800}
 
 /* submit */
 .submitbar{margin-top:auto;position:sticky;bottom:0;margin-left:-20px;margin-right:-20px;padding:12px 20px max(24px,env(safe-area-inset-bottom));background:var(--bg-main);z-index:100}
@@ -216,15 +247,11 @@ input:focus{background:var(--card);border-color:var(--blue-main)}
     <p class="hint">'사용 중'인 시트에서 외출 기록을 조회해요. 시트는 '링크가 있는 모든 사용자 – 뷰어'로 공유되어 있어야 해요.</p>
   </div>
   <div>
-    <div class="label">전체 외출 제한</div>
-    <div class="list" id="gRow"></div>
-    <p class="hint">설정한 시간에는 모든 학생이 외출을 제출할 수 없어요. 복귀 기록은 항상 가능해요. 변경은 바로 적용돼요.</p>
-  </div>
-  <div>
     <div class="label">학생 관리<small id="stCnt"></small></div>
     <input type="text" id="stQ" placeholder="이름 · 매니저 검색" autocomplete="off">
-    <div class="list" id="stRows" style="margin-top:8px"></div>
-    <p class="hint">학생이 정보를 등록하거나 외출하면 여기에 자동으로 추가돼요. 상태·제한 시간 변경은 저장하기 없이 바로 적용돼요.</p>
+    <div class="stu-grid" id="stRows"></div>
+    <button type="button" class="stepper-btn minus wide" id="gBtn" style="margin-top:12px"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M6 6l12 12"/></svg><span>전체 밴</span><span class="tag off" id="gTag">없음</span></button>
+    <p class="hint">학생이 정보를 등록하거나 외출하면 여기에 자동으로 추가돼요. 상태·제한 시간 변경은 저장하기 없이 바로 적용돼요. '전체 밴'에 설정한 시간에는 모든 학생이 외출을 제출할 수 없고, 복귀 기록은 항상 가능해요.</p>
   </div>
   <div class="submitbar" id="saveBar"><button type="button" class="btn-simple submit" id="btnSave">저장하기<span class="dirty-dot"></span></button></div>
 </main>
@@ -267,7 +294,7 @@ let cfg={managers:[],sheets:[]}, dirty=false, saving=false, edit=null, delTarget
 
 /* ---------- press feedback (원본 동일) ---------- */
 (function(){
-  const SEL='.btn-simple,.chip,.mgr-item,.latelink,.stepper-btn,.cm-btn';
+  const SEL='.btn-simple,.chip,.mgr-item,.latelink,.stepper-btn,.rbtn,.cm-btn';
   let el=null,t0=0,sx=0,sy=0;
   const clear=()=>{if(el){el.classList.remove('pressed');el=null}};
   document.addEventListener('touchstart',e=>{const x=e.target.closest(SEL);clear();if(!x||x.disabled)return;el=x;t0=Date.now();sx=e.touches[0].clientX;sy=e.touches[0].clientY;x.classList.add('pressed')},{passive:true});
@@ -361,13 +388,33 @@ $('btnSave').onclick=()=>{
 
 /* ---------- 학생 관리 ---------- */
 let students=[],stEdit=null,stSel='active';
-const ST={active:['정상',''],paused:['일시정지',' off'],banned:['차단',' ban']};
 const KL={register:'등록',out:'외출',back:'복귀',late:'지각'};
 const fmt=t=>{if(!t)return'-';const d=new Date(t),p=n=>String(n).padStart(2,'0');return p(d.getMonth()+1)+'/'+p(d.getDate())+' '+p(d.getHours())+':'+p(d.getMinutes())};
 let glob={wins:[],hist:[]},ewins=[],stTab='act';
 const HL={active:'정상으로 변경',paused:'일시정지',banned:'차단',win:'외출 제한 시간 변경',blocked:'외출 시도 차단됨'};
-const CLOCK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>';
+const I_DEL='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 12h12"/></svg>';
+const I_BAN='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M6 6l12 12"/></svg>';
+const I_LOG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M4.5 6h.01M4.5 12h.01M4.5 18h.01" stroke-width="3"/></svg>';
 const wTxt=w=>w.s+' ~ '+w.e;
+
+/* 제한 시간(한국 시간 기준)에 지금 걸려 있으면 풀리는 시각을 구한다 — student.js의 판정과 동일 */
+const p2=n=>String(n).padStart(2,'0');
+const toMin=t=>+t.slice(0,2)*60+ +t.slice(3);
+const inWin=(w,n)=>{const a=toMin(w.s),b=toMin(w.e);return a<b?(n>=a&&n<b):(n>=a||n<b)};
+function liftOf(wins){
+  const d=new Date(Date.now()+9*3600e3),n=d.getUTCHours()*60+d.getUTCMinutes();
+  if(!wins.some(w=>inWin(w,n)))return null;
+  for(let k=1;k<=1440;k++){const m=(n+k)%1440;if(!wins.some(w=>inWin(w,m)))return{t:p2(m/60|0)+':'+p2(m%60),next:n+k>=1440}}
+  return{t:''};
+}
+/* 카드 상태: 차단=빨강(ban) · 일시정지/지금 제한 시간 중=노랑(tmp) · 그 외 회색 */
+function stState(r){
+  if(r.status==='banned')return{c:'ban',txt:'무기한'};
+  if(r.status==='paused')return{c:'tmp',txt:'일시정지'};
+  const l=liftOf((glob.wins||[]).concat(r.wins||[]));
+  if(l)return{c:'tmp',txt:l.t?(l.next?'내일 ':'')+l.t+' 해제':'상시 제한'};
+  return{c:'',txt:'정상'};
+}
 const logRow=(h,d,t)=>`<div style="padding:6px 0;border-bottom:1px solid var(--line)"><b>${h}</b> <span style="color:var(--muted)">${fmt(t)}</span>${d?`<div style="color:var(--muted)">${esc(d)}</div>`:''}</div>`;
 const histHtml=h=>{h=(h||[]).slice().reverse();return h.length?h.map(l=>logRow(HL[l.a]||l.a,l.d,l.t)).join(''):'<div class="empty">기록이 없어요</div>'};
 function winInner(){
@@ -377,38 +424,62 @@ function winInner(){
 }
 function loadStudents(){return api({action:'list'},'/api/students').then(j=>{students=j.students||[];glob=j.global||{wins:[],hist:[]};renderStudents();renderGlobal()})}
 function renderGlobal(){
-  const on=glob.wins.length;
-  $('gRow').innerHTML=`<div class="row"><button type="button" class="mgr-item" id="gBtn"><span class="icon-wrap">${CLOCK}</span><span class="nm">전체 외출 제한<small>${on?esc(glob.wins.map(wTxt).join(', ')):'설정 안 함'}</small></span><span class="tag${on?' ban':' off'}">${on?'적용 중':'없음'}</span></button></div>`;
+  const on=glob.wins.length,t=$('gTag');
+  t.textContent=on?'적용 중':'없음';t.className='tag'+(on?' ban':' off');
 }
 function renderStudents(){
   const q=$('stQ').value.trim().toLowerCase();
   const rows=students.filter(r=>!q||((r.name||'')+(r.mgr||'')).toLowerCase().includes(q));
   $('stCnt').textContent=students.length+'명';
-  $('stRows').innerHTML=rows.length?rows.map(r=>{const t=ST[r.status]||ST.active,w=(r.wins||[]).length?' · 제한 '+r.wins.length:'';
-    return `<div class="row"><button type="button" class="mgr-item" data-t="${esc(r.id)}"><span class="ava">${esc(ch(r.name||''))}</span><span class="nm">${esc(r.name||'이름 없음')}<small>${esc(r.mgr||'')} · 최근 ${fmt(r.last)}${w}</small></span><span class="tag${t[1]}">${t[0]}</span></button></div>`}).join('')
+  $('stRows').innerHTML=rows.length?rows.map(r=>{const s=stState(r),id=esc(r.id);
+    return `<div class="stu${s.c?' '+s.c:''}">`+
+      `<div class="stu-top"><div class="stu-info"><span class="stu-ava">${esc(ch(r.name||''))}</span><span class="stu-nm">${esc(r.name||'이름 없음')}</span><span class="stu-sub">${esc(r.mgr||'')}</span></div>`+
+      `<div class="stu-btns">`+
+        `<button type="button" class="rbtn del" data-sa="del" data-id="${id}" aria-label="학생 삭제">${I_DEL}</button>`+
+        `<button type="button" class="rbtn bn" data-sa="ban" data-id="${id}" aria-label="밴 관리">${I_BAN}</button>`+
+        `<button type="button" class="rbtn lg" data-sa="log" data-id="${id}" aria-label="기록 조회">${I_LOG}</button>`+
+      `</div></div>`+
+      `<div class="stu-st">${esc(s.txt)}</div></div>`}).join('')
     :'<div class="empty">'+(students.length?'검색 결과가 없어요':'아직 등록된 학생이 없어요')+'</div>';
 }
 $('stQ').addEventListener('input',renderStudents);
+/* 제한 시간이 시작·종료되면 카드 색이 바뀌도록 주기적으로 다시 그림 */
+setInterval(()=>{if(!$('adminView').classList.contains('hide'))renderStudents()},30000);
 function stLog(r){
   if(stTab==='ban')return histHtml(r.hist);
   const l=(r.logs||[]).slice().reverse();
   return l.length?l.map(x=>logRow(KL[x.k]||x.k,x.d,x.t)).join(''):'<div class="empty">기록이 없어요</div>';
 }
+/* 밴 관리: 상태(정상/일시정지/차단) + 개별 외출 제한 시간 */
 function editStudent(id){
   const r=students.find(x=>x.id===id);if(!r)return;
-  edit={t:'t',id};stSel=r.status||'active';stTab='act';ewins=(r.wins||[]).map(w=>({...w}));
-  $('shTitle').textContent=r.name||'학생';
+  edit={t:'t',id};stSel=r.status||'active';ewins=(r.wins||[]).map(w=>({...w}));
+  $('shTitle').textContent=(r.name||'학생')+' 밴 관리';
   $('shBody').innerHTML=
    `<div class="fld"><div class="label">${esc(r.mgr||'')}<small>등록 ${fmt(r.first)}</small></div></div>`+
    `<div class="fld"><div class="label">상태</div><div class="chips" id="stAct" style="grid-template-columns:repeat(3,1fr)"><button type="button" class="chip${stSel==='active'?' sel':''}" data-v="active">정상</button><button type="button" class="chip${stSel==='paused'?' sel':''}" data-v="paused">일시정지</button><button type="button" class="chip${stSel==='banned'?' sel r':''}" data-v="banned">차단</button></div></div>`+
-   `<div class="fld" id="wBox">${winInner()}</div>`+
-   `<div class="fld"><div class="chips" id="stTab" style="margin-bottom:8px"><button type="button" class="chip sel" data-v="act">활동 기록</button><button type="button" class="chip" data-v="ban">밴 기록</button></div><div id="stLog" style="font-size:13.5px;font-weight:500;line-height:1.5">${stLog(r)}</div></div>`+
-   `<button type="button" class="stepper-btn minus wide" id="stDel">학생 삭제</button>`;
+   `<div class="fld" id="wBox">${winInner()}</div>`;
   openSheet();
+}
+/* 기록 조회: 활동 기록 / 밴 기록 */
+function viewLogs(id){
+  const r=students.find(x=>x.id===id);if(!r)return;
+  edit={t:'l',id};stTab='act';
+  $('shTitle').textContent=(r.name||'학생')+' 기록';
+  $('shBody').innerHTML=
+   `<div class="fld"><div class="label">${esc(r.mgr||'')}<small>최근 ${fmt(r.last)}</small></div></div>`+
+   `<div class="fld"><div class="chips" id="stTab" style="margin-bottom:8px"><button type="button" class="chip sel" data-v="act">활동 기록</button><button type="button" class="chip" data-v="ban">밴 기록</button></div><div id="stLog" style="font-size:13.5px;font-weight:500;line-height:1.5">${stLog(r)}</div></div>`;
+  openSheet();
+}
+function askDelStudent(id){
+  const r=students.find(x=>x.id===id);if(!r)return;
+  delTarget={isT:true,id};
+  $('dlDesc').innerHTML=`<b>${esc(r.name||'이름 없음')}</b> 학생과 기록을 모두 지워요.<br>다시 등록하면 새로 추가돼요.`;
+  $('dlOv').classList.add('show');$('dl').classList.add('show');
 }
 function editGlobal(){
   edit={t:'g'};ewins=glob.wins.map(w=>({...w}));
-  $('shTitle').textContent='전체 외출 제한';
+  $('shTitle').textContent='전체 밴';
   $('shBody').innerHTML=`<div class="fld" id="wBox">${winInner()}</div><div class="fld"><div class="label">밴 기록<small>${(glob.hist||[]).length}건</small></div><div style="font-size:13.5px;font-weight:500;line-height:1.5">${histHtml(glob.hist)}</div></div>`;
   openSheet();
 }
@@ -426,15 +497,10 @@ $('shBody').addEventListener('click',e=>{
     if(ewins.some(w=>w.s===s&&w.e===t)){toast('이미 있는 시간이에요');return}
     ewins.push({s,e:t});$('wBox').innerHTML=winInner();$('wS').value=s;$('wE').value=t;return;
   }
-  if(e.target.closest('#stDel')&&edit&&edit.t==='t'){
-    const r=students.find(x=>x.id===edit.id);
-    delTarget={isT:true,id:edit.id};
-    $('dlDesc').innerHTML=`<b>${esc(r?r.name:'')}</b> 학생과 기록을 모두 지워요.<br>다시 등록하면 새로 추가돼요.`;
-    $('dlOv').classList.add('show');$('dl').classList.add('show');
-  }
 });
 document.addEventListener('click',e=>{
-  const b=e.target.closest('[data-t]');if(b){editStudent(b.dataset.t);return}
+  const b=e.target.closest('[data-sa]');
+  if(b){const a=b.dataset.sa,id=b.dataset.id;if(a==='ban')editStudent(id);else if(a==='log')viewLogs(id);else askDelStudent(id);return}
   if(e.target.closest('#gBtn'))editGlobal();
 });
 
@@ -467,6 +533,7 @@ $('shBody').addEventListener('click',e=>{
 });
 $('shOk').onclick=()=>{
   if(!edit)return;
+  if(edit.t==='l'){closeSheet();return}
   if(edit.t==='t'||edit.t==='g'){
     const isG=edit.t==='g',r=isG?glob:students.find(x=>x.id===edit.id);
     const wc=JSON.stringify(ewins)!==JSON.stringify(r?r.wins||[]:[]);
