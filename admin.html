@@ -79,8 +79,8 @@ input:focus{background:var(--card);border-color:var(--blue-main)}
 ::placeholder{color:#b0b8c1;font-weight:500}
 
 /* press effect (원본과 동일) */
-.btn-simple,.chip,.mgr-item,.latelink,.stepper-btn,.rbtn,.cm-btn{transition:transform var(--press-out),background-color var(--press-out),border-color var(--press-out),filter var(--press-out)!important}
-.btn-simple:active,.btn-simple.pressed,.chip:active,.chip.pressed,.mgr-item:active,.mgr-item.pressed,.latelink:active,.latelink.pressed,.cm-btn:active,.cm-btn.pressed{transform:scale(var(--press-scale-lg))!important;filter:brightness(.92)!important;transition:transform var(--press-in),filter var(--press-in),background-color var(--press-in)!important}
+.btn-simple,.chip,.mgr-item,.latelink,.stepper-btn,.rbtn,.cm-btn,.gban,.st-opt{transition:transform var(--press-out),background-color var(--press-out),border-color var(--press-out),filter var(--press-out)!important}
+.btn-simple:active,.btn-simple.pressed,.chip:active,.chip.pressed,.mgr-item:active,.mgr-item.pressed,.latelink:active,.latelink.pressed,.cm-btn:active,.cm-btn.pressed,.gban:active,.gban.pressed,.st-opt:active,.st-opt.pressed{transform:scale(var(--press-scale-lg))!important;filter:brightness(.92)!important;transition:transform var(--press-in),filter var(--press-in),background-color var(--press-in)!important}
 .stepper-btn:active,.stepper-btn.pressed,.rbtn:active,.rbtn.pressed{transform:scale(var(--press-scale-md))!important;filter:brightness(.92)!important;transition:transform var(--press-in),filter var(--press-in),background-color var(--press-in)!important}
 .btn-simple{border:none;cursor:pointer;font-family:inherit;border-radius:16px;font-weight:600;letter-spacing:-.01em}
 .btn-simple:disabled{opacity:.6;pointer-events:none}
@@ -105,8 +105,21 @@ input:focus{background:var(--card);border-color:var(--blue-main)}
 .stepper-btn.wide{width:100%;height:48px;margin-top:8px;font-size:15.5px;gap:6px}
 .empty{padding:20px;text-align:center;color:var(--muted);font-size:14px;font-weight:500;grid-column:1/-1}
 
+/* 학생 관리 헤더: [제목] ........ [전체 밴] [🔎 검색…] */
+.sec-head{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.sec-head .label{margin:0;flex:1;min-width:0;white-space:nowrap}
+.gban{flex:0 0 auto;display:flex;align-items:center;gap:5px;height:38px;padding:0 12px;border:none;border-radius:12px;background:var(--error-bg);color:var(--error);font-size:14px;font-weight:700;font-family:inherit;letter-spacing:-.01em;white-space:nowrap;cursor:pointer}
+.gban svg{width:15px;height:15px;flex-shrink:0}
+.gban .gdot{display:none;width:6px;height:6px;border-radius:50%;background:var(--error)}
+.gban.on .gdot{display:block}
+.stq{flex:0 1 150px;min-width:0;display:flex;align-items:center;gap:6px;height:38px;padding:0 12px;background:var(--gray-fill);border:1px solid transparent;border-radius:12px;color:var(--muted);transition:border-color .5s ease,background-color .5s ease}
+.stq:focus-within{background:var(--card);border-color:var(--blue-main)}
+.stq svg{width:16px;height:16px;flex-shrink:0}
+.stq input[type=text]{flex:1;min-width:0;width:100%;height:100%;padding:0;background:transparent;border:none;border-radius:0;font-size:14px}
+.stq input[type=text]:focus{background:transparent;border-color:transparent}
+
 /* 학생 카드 (한 줄 3명) — 버튼은 카드 오른쪽 윤곽에 걸쳐 배치 */
-.stu-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px 18px;margin-top:14px}
+.stu-grid{position:relative;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px 18px;margin-top:14px}
 .stu{position:relative;aspect-ratio:1/1.3;display:flex;flex-direction:column;background:#eceef1;border:2px solid transparent;border-radius:16px;padding:4px;transition:background-color .3s ease,border-color .3s ease}
 .stu-img{position:relative;flex:1;min-height:0;border-radius:11px;background:transparent;overflow:hidden;transition:background-color .3s ease}
 .stu-sil{position:absolute;left:50%;top:46%;width:62%;transform:translate(-50%,-50%);fill:#fff;transition:fill .3s ease}
@@ -179,21 +192,43 @@ input:focus{background:var(--card);border-color:var(--blue-main)}
 .err-shake{animation:cmShake .45s cubic-bezier(.36,.07,.19,.97) both!important}
 
 /* bottom sheet */
-.bottom-sheet-overlay{position:fixed;inset:0;background:rgba(0,0,0,.30);backdrop-filter:blur(0);-webkit-backdrop-filter:blur(0);z-index:1100;opacity:0;visibility:hidden;transition:opacity .45s cubic-bezier(.45,0,.55,1),visibility .45s ease,backdrop-filter .18s ease}
-.bottom-sheet-overlay.show{opacity:1;visibility:visible;backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);transition:opacity .32s cubic-bezier(.45,0,.55,1),visibility .32s ease,backdrop-filter .32s ease}
-.bottom-sheet{position:fixed;bottom:max(12px,env(safe-area-inset-bottom));left:11px;width:calc(100% - 22px);max-width:458px;margin:0 auto;right:11px;background:var(--bg-main);border-radius:22px;z-index:1101;padding:32px 18px 21px;opacity:0;transform:translate3d(0,120%,0) scale(1.05);visibility:hidden;transition:transform .45s cubic-bezier(.3,0,.1,1),opacity .35s ease,visibility .45s ease;display:flex;flex-direction:column;gap:18px;box-shadow:0 12px 40px rgba(0,0,0,.15)}
-.bottom-sheet.show{opacity:1;transform:translate3d(0,0,0) scale(1);visibility:visible;transition:transform .32s cubic-bezier(.2,.8,.2,1),opacity .2s ease,visibility .32s ease}
+.bottom-sheet-overlay{position:fixed;inset:0;background:rgba(0,0,0,.30);backdrop-filter:blur(0);-webkit-backdrop-filter:blur(0);z-index:1100;opacity:0;visibility:hidden;transition:opacity .4s cubic-bezier(.4,0,.2,1),backdrop-filter .4s ease,-webkit-backdrop-filter .4s ease,visibility 0s .4s}
+.bottom-sheet-overlay.show{opacity:1;visibility:visible;backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);transition:opacity .5s cubic-bezier(.25,.8,.25,1),backdrop-filter .5s ease,-webkit-backdrop-filter .5s ease,visibility 0s}
+.bottom-sheet{position:fixed;bottom:max(12px,env(safe-area-inset-bottom));left:11px;width:calc(100% - 22px);max-width:458px;margin:0 auto;right:11px;background:var(--bg-main);border-radius:22px;z-index:1101;padding:32px 18px 21px;opacity:1;transform:translate3d(0,calc(100% + 28px),0);visibility:hidden;will-change:transform;transition:transform .42s cubic-bezier(.4,0,.2,1),visibility 0s .42s;display:flex;flex-direction:column;gap:18px;box-shadow:0 12px 40px rgba(0,0,0,.15)}
+.bottom-sheet.show{transform:translate3d(0,0,0);visibility:visible;transition:transform .62s var(--sheet-enter,cubic-bezier(.22,1,.36,1)),visibility 0s}
 .bottom-sheet::before{content:'';position:absolute;top:12px;left:50%;transform:translateX(-50%);width:40px;height:4px;background:var(--line);border-radius:2px}
 .bs-header{display:flex;justify-content:center;margin-bottom:2px}
 .bs-header h3{font-size:20px;font-weight:700}
-@keyframes sheetItemFadeIn{0%{opacity:0;transform:translateY(16px)}100%{opacity:1;transform:none}}
-.bottom-sheet.show .bs-header{animation:sheetItemFadeIn .4s cubic-bezier(.2,0,0,1) backwards}
-.bottom-sheet.show .fld{animation:sheetItemFadeIn .4s cubic-bezier(.2,0,0,1) backwards}
-.bottom-sheet.show .fld:nth-child(1){animation-delay:.03s}.bottom-sheet.show .fld:nth-child(2){animation-delay:.06s}.bottom-sheet.show .fld:nth-child(3){animation-delay:.09s}.bottom-sheet.show .fld:nth-child(4){animation-delay:.12s}
+@keyframes sheetItemFadeIn{0%{opacity:0;transform:translateY(12px)}100%{opacity:1;transform:none}}
+.bottom-sheet.show .bs-header{animation:sheetItemFadeIn .5s cubic-bezier(.22,1,.36,1) .08s backwards}
+.bottom-sheet.show .fld{animation:sheetItemFadeIn .55s cubic-bezier(.22,1,.36,1) backwards}
+.bottom-sheet.show .fld:nth-child(1){animation-delay:.12s}.bottom-sheet.show .fld:nth-child(2){animation-delay:.17s}.bottom-sheet.show .fld:nth-child(3){animation-delay:.22s}.bottom-sheet.show .fld:nth-child(4){animation-delay:.27s}
 .fld .label{font-size:14px;margin-bottom:8px}
 .chips{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
 .chip{background:var(--gray-fill);border:none;border-radius:14px;padding:16px 8px;font-size:15px;font-weight:500;cursor:pointer;color:var(--muted);font-family:inherit;transition:all .2s var(--toss-spring)}
 .chip.sel{background:var(--blue-light);color:var(--blue-main);font-weight:700}
+
+/* 밴 관리 시트 */
+.sp{display:flex;align-items:center;gap:12px}
+.sp .ava{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#fff;background:linear-gradient(160deg,#9BA9D6,#7C89C4);flex-shrink:0}
+.sp-t{min-width:0;display:flex;flex-direction:column;line-height:1.35}
+.sp-t b{font-size:16px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sp-t small{font-size:13px;color:var(--muted);font-weight:500}
+.st-opts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.st-opt{display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 6px 12px;border:1.5px solid transparent;border-radius:16px;background:var(--gray-fill);color:var(--muted);font-family:inherit;font-size:14px;font-weight:600;cursor:pointer}
+.st-opt svg{width:24px;height:24px}
+.st-opt[data-v=active].sel{background:var(--blue-light);color:var(--blue-main);border-color:var(--blue-main)}
+.st-opt[data-v=paused].sel{background:#ffe9a6;color:#9a5b00;border-color:#ffc928}
+.st-opt[data-v=banned].sel{background:var(--error-bg);color:var(--error);border-color:var(--error)}
+.st-desc{margin-top:10px;font-size:13px;color:var(--muted);font-weight:500;line-height:1.5;text-align:center}
+.reveal{display:grid;grid-template-rows:0fr;margin-top:-18px;opacity:0;visibility:hidden;transition:grid-template-rows .42s cubic-bezier(.2,.8,.2,1),margin-top .42s cubic-bezier(.2,.8,.2,1),opacity .3s ease,visibility 0s .42s}
+.reveal.open{grid-template-rows:1fr;margin-top:0;opacity:1;visibility:visible;transition-delay:0s}
+.reveal>.rv{overflow:hidden;min-height:0}
+.wrow{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.wrow .wt{flex:1;min-width:0;background:var(--gray-fill);border-radius:14px;padding:13px 16px;font-size:15.5px;font-weight:600}
+.wadd{display:flex;align-items:center;gap:8px}
+.wadd input[type=time]{flex:1;min-width:0;padding:16px 10px 16px 14px;font-size:15px}
+.wprev{display:inline-flex;margin-bottom:10px;padding:5px 9px;border-radius:8px;background:#ffe9a6;color:#9a5b00;font-size:12.5px;font-weight:700}
 
 /* center modal */
 .center-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);backdrop-filter:blur(0);-webkit-backdrop-filter:blur(0);z-index:1200;opacity:0;visibility:hidden;transition:opacity .3s cubic-bezier(.45,0,.55,1),visibility .3s ease,backdrop-filter .15s ease}
@@ -247,10 +282,15 @@ input:focus{background:var(--card);border-color:var(--blue-main)}
     <p class="hint">'사용 중'인 시트에서 외출 기록을 조회해요. 시트는 '링크가 있는 모든 사용자 – 뷰어'로 공유되어 있어야 해요.</p>
   </div>
   <div>
-    <div class="label">학생 관리<small id="stCnt"></small></div>
-    <input type="text" id="stQ" placeholder="이름 · 매니저 검색" autocomplete="off">
+    <div class="sec-head">
+      <div class="label">학생 관리<small id="stCnt"></small></div>
+      <button type="button" class="gban" id="gBtn" aria-label="전체 밴"><span>전체 밴</span><i class="gdot" id="gTag"></i></button>
+      <label class="stq">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20.5 20.5L16 16"/></svg>
+        <input type="text" id="stQ" placeholder="검색…" aria-label="이름 · 매니저 검색" autocomplete="off">
+      </label>
+    </div>
     <div class="stu-grid" id="stRows"></div>
-    <button type="button" class="stepper-btn minus wide" id="gBtn" style="margin-top:12px"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M6 6l12 12"/></svg><span>전체 밴</span><span class="tag off" id="gTag">없음</span></button>
     <p class="hint">학생이 정보를 등록하거나 외출하면 여기에 자동으로 추가돼요. 상태·제한 시간 변경은 저장하기 없이 바로 적용돼요. '전체 밴'에 설정한 시간에는 모든 학생이 외출을 제출할 수 없고, 복귀 기록은 항상 가능해요.</p>
   </div>
   <div class="submitbar" id="saveBar"><button type="button" class="btn-simple submit" id="btnSave">저장하기<span class="dirty-dot"></span></button></div>
@@ -294,7 +334,7 @@ let cfg={managers:[],sheets:[]}, dirty=false, saving=false, edit=null, delTarget
 
 /* ---------- press feedback (원본 동일) ---------- */
 (function(){
-  const SEL='.btn-simple,.chip,.mgr-item,.latelink,.stepper-btn,.rbtn,.cm-btn';
+  const SEL='.btn-simple,.chip,.mgr-item,.latelink,.stepper-btn,.rbtn,.cm-btn,.gban,.st-opt';
   let el=null,t0=0,sx=0,sy=0;
   const clear=()=>{if(el){el.classList.remove('pressed');el=null}};
   document.addEventListener('touchstart',e=>{const x=e.target.closest(SEL);clear();if(!x||x.disabled)return;el=x;t0=Date.now();sx=e.touches[0].clientX;sy=e.touches[0].clientY;x.classList.add('pressed')},{passive:true});
@@ -404,13 +444,22 @@ const inWin=(w,n)=>{const a=toMin(w.s),b=toMin(w.e);return a<b?(n>=a&&n<b):(n>=a
 function liftOf(wins){
   const d=new Date(Date.now()+9*3600e3),n=d.getUTCHours()*60+d.getUTCMinutes();
   if(!wins.some(w=>inWin(w,n)))return null;
-  for(let k=1;k<=1440;k++){const m=(n+k)%1440;if(!wins.some(w=>inWin(w,m)))return{t:p2(m/60|0)+':'+p2(m%60),next:n+k>=1440}}
+  for(let k=1;k<=1440;k++){const m=(n+k)%1440;if(!wins.some(w=>inWin(w,m)))return{t:p2(m/60|0)+':'+p2(m%60),next:n+k>=1440,k}}
   return{t:''};
 }
 /* 카드 상태: 차단=빨강(ban) · 일시정지/지금 제한 시간 중=노랑(tmp) · 그 외 회색 */
+const remTxt=k=>{const h=k/60|0,m=k%60;return (h?h+'시간 ':'')+(m?m+'분 ':'')+'남음'};
+function nextStart(ws){
+  const d=new Date(Date.now()+9*3600e3),n=d.getUTCHours()*60+d.getUTCMinutes();
+  return ws.map(w=>({s:w.s,k:(toMin(w.s)-n+1440)%1440})).sort((a,b)=>a.k-b.k)[0].s;
+}
 function stState(r){
   if(r.status==='banned')return{c:'ban',txt:'무기한',lock:1};
-  if(r.status==='paused')return{c:'tmp',txt:'일시정지',lock:1};
+  if(r.status==='paused'){
+    const ws=r.wins||[],pl=liftOf(ws);
+    if(pl&&pl.k)return{c:'tmp',txt:pl.k>=60?remTxt(pl.k).replace(' 남음',''):remTxt(pl.k),lock:1};
+    return{c:'tmp',txt:ws.length?nextStart(ws)+' 시작':'무기한',lock:1};
+  }
   const l=liftOf((glob.wins||[]).concat(r.wins||[]));
   if(l)return{c:'tmp',txt:l.t?(l.next?'내일 ':'')+l.t+' 해제':'상시 제한'};
   return{c:'',txt:'정상'};
@@ -418,21 +467,23 @@ function stState(r){
 const logRow=(h,d,t)=>`<div style="padding:6px 0;border-bottom:1px solid var(--line)"><b>${h}</b> <span style="color:var(--muted)">${fmt(t)}</span>${d?`<div style="color:var(--muted)">${esc(d)}</div>`:''}</div>`;
 const histHtml=h=>{h=(h||[]).slice().reverse();return h.length?h.map(l=>logRow(HL[l.a]||l.a,l.d,l.t)).join(''):'<div class="empty">기록이 없어요</div>'};
 function winInner(){
-  return `<div class="label">외출 제한 시간<small>이 시간엔 외출 불가</small></div>`+
-   (ewins.length?ewins.map((w,i)=>`<div class="row" style="margin-bottom:6px"><div style="flex:1;padding:12px;font-size:15.5px;font-weight:600">${wTxt(w)}</div><button type="button" class="stepper-btn minus" data-wd="${i}" aria-label="삭제">−</button></div>`).join(''):'<div class="hint" style="margin:0 0 8px">설정된 시간이 없어요</div>')+
-   `<div class="row"><input type="time" id="wS" value="22:00"><input type="time" id="wE" value="06:00"><button type="button" class="stepper-btn plus" id="wAdd" aria-label="추가">＋</button></div>`;
+  const own=edit&&edit.t==='t',l=own&&ewins.length?liftOf(ewins):null;
+  return `<div class="label">${own?'일시정지 시간':'외출 제한 시간'}<small>${own?'이 시간 동안 외출 불가':'이 시간엔 외출 불가'}</small></div>`+
+   (l&&l.k?`<div class="wprev">지금 ${remTxt(l.k)}</div>`:'')+
+   (ewins.length?ewins.map((w,i)=>`<div class="wrow"><div class="wt">${wTxt(w)}</div><button type="button" class="stepper-btn minus" data-wd="${i}" aria-label="삭제">−</button></div>`).join(''):`<div class="hint" style="margin:0 0 10px">${own?'시간을 추가하지 않으면 해제할 때까지 일시정지돼요':'설정된 시간이 없어요'}</div>`)+
+   `<div class="wadd"><input type="time" id="wS" value="22:00"><input type="time" id="wE" value="06:00"><button type="button" class="stepper-btn plus" id="wAdd" aria-label="추가">＋</button></div>`;
 }
 function loadStudents(){return api({action:'list'},'/api/students').then(j=>{students=j.students||[];glob=j.global||{wins:[],hist:[]};renderStudents();renderGlobal()})}
 function renderGlobal(){
-  const on=glob.wins.length,t=$('gTag');
-  t.textContent=on?'적용 중':'없음';t.className='tag'+(on?' ban':' off');
+  const on=glob.wins.length;
+  $('gBtn').classList.toggle('on',!!on);
 }
-function renderStudents(){
+function _renderStudents(){
   const q=$('stQ').value.trim().toLowerCase();
   const rows=students.filter(r=>!q||((r.name||'')+(r.mgr||'')).toLowerCase().includes(q));
   $('stCnt').textContent=students.length+'명';
   $('stRows').innerHTML=rows.length?rows.map(r=>{const s=stState(r),id=esc(r.id);
-    return `<div class="stu${s.c?' '+s.c:''}${s.lock?' lock':''}"${s.lock?` data-sa="ban" data-id="${id}"`:''}>`+
+    return `<div class="stu${s.c?' '+s.c:''}${s.lock?' lock':''}" data-k="${id}"${s.lock?` data-sa="ban" data-id="${id}"`:''}>`+
       `<div class="stu-img"><svg class="stu-sil" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4.2"/><path d="M3.5 22c0-4.9 3.8-8 8.5-8s8.5 3.1 8.5 8z"/></svg><div class="stu-ov"><span class="stu-nm">${esc(r.name||'이름 없음')}</span></div></div>`+
       (s.c?`<div class="stu-st">${esc(s.txt)}</div>`:'')+
       (s.lock?'':`<div class="stu-btns">`+
@@ -442,7 +493,40 @@ function renderStudents(){
       `</div>`)+`</div>`}).join('')
     :'<div class="empty">'+(students.length?'검색 결과가 없어요':'아직 등록된 학생이 없어요')+'</div>';
 }
-$('stQ').addEventListener('input',renderStudents);
+/* 검색 시 카드 정렬 애니메이션 (FLIP): 남는 카드는 새 자리로 미끄러지고, 사라지는 카드는 페이드아웃, 다시 나타나는 카드는 팝인 */
+function renderStudents(anim){
+  const grid=$('stRows');
+  if(anim!==true||matchMedia('(prefers-reduced-motion:reduce)').matches){_renderStudents();return}
+  const oldEls=[...grid.querySelectorAll('.stu[data-k]')];
+  const oldRect=new Map(oldEls.map(el=>[el.dataset.k,el.getBoundingClientRect()]));
+  const oldH=grid.offsetHeight;
+  _renderStudents();
+  let ease='cubic-bezier(.16,1,.3,1)';
+  try{const v=getComputedStyle(document.documentElement).getPropertyValue('--toss-spring').trim();if(v&&CSS.supports('transition-timing-function',v))ease=v}catch(_){}
+  const D=460,seen=new Set();
+  grid.querySelectorAll('.stu[data-k]').forEach(el=>{
+    const k=el.dataset.k,o=oldRect.get(k);seen.add(k);
+    if(o){
+      const n=el.getBoundingClientRect(),dx=o.left-n.left,dy=o.top-n.top;
+      if(dx||dy)el.animate([{transform:`translate(${dx}px,${dy}px)`},{transform:'none'}],{duration:D,easing:ease});
+    }else{
+      el.animate([{opacity:0,transform:'scale(.9)'},{opacity:1,transform:'none'}],{duration:D,easing:ease});
+    }
+  });
+  const gr=grid.getBoundingClientRect();
+  oldEls.forEach(el=>{
+    if(seen.has(el.dataset.k))return;
+    const o=oldRect.get(el.dataset.k);
+    el.style.cssText+=`;position:absolute;left:${o.left-gr.left}px;top:${o.top-gr.top}px;width:${o.width}px;height:${o.height}px;margin:0;pointer-events:none;z-index:0`;
+    grid.appendChild(el);
+    el.animate([{opacity:1,transform:'scale(1)'},{opacity:0,transform:'scale(.9)'}],{duration:200,easing:'ease-out',fill:'forwards'}).onfinish=()=>el.remove();
+  });
+  const emp=grid.querySelector('.empty');
+  if(emp)emp.animate([{opacity:0},{opacity:1}],{duration:D,easing:ease});
+  const nh=grid.offsetHeight;
+  if(nh!==oldH)grid.animate([{height:oldH+'px'},{height:nh+'px'}],{duration:D,easing:ease});
+}
+$('stQ').addEventListener('input',()=>renderStudents(true));
 /* 제한 시간이 시작·종료되면 카드 색이 바뀌도록 주기적으로 다시 그림 */
 setInterval(()=>{if(!$('adminView').classList.contains('hide'))renderStudents()},30000);
 function stLog(r){
@@ -451,14 +535,19 @@ function stLog(r){
   return l.length?l.map(x=>logRow(KL[x.k]||x.k,x.d,x.t)).join(''):'<div class="empty">기록이 없어요</div>';
 }
 /* 밴 관리: 상태(정상/일시정지/차단) + 개별 외출 제한 시간 */
+const ST_OPT=[
+  {v:'active',t:'정상',d:'평소처럼 외출을 제출할 수 있어요',i:'<circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.7 2.7L16 9.5"/>'},
+  {v:'paused',t:'일시정지',d:'정한 시간 동안만 외출을 제출할 수 없어요',i:'<circle cx="12" cy="12" r="9"/><path d="M10 9v6M14 9v6"/>'},
+  {v:'banned',t:'차단',d:'해제할 때까지 외출을 제출할 수 없어요',i:'<circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/>'}
+];
 function editStudent(id){
   const r=students.find(x=>x.id===id);if(!r)return;
   edit={t:'t',id};stSel=r.status||'active';ewins=(r.wins||[]).map(w=>({...w}));
-  $('shTitle').textContent=(r.name||'학생')+' 밴 관리';
+  $('shTitle').textContent='밴 관리';
   $('shBody').innerHTML=
-   `<div class="fld"><div class="label">${esc(r.mgr||'')}<small>등록 ${fmt(r.first)}</small></div></div>`+
-   `<div class="fld"><div class="label">상태</div><div class="chips" id="stAct" style="grid-template-columns:repeat(3,1fr)"><button type="button" class="chip${stSel==='active'?' sel':''}" data-v="active">정상</button><button type="button" class="chip${stSel==='paused'?' sel':''}" data-v="paused">일시정지</button><button type="button" class="chip${stSel==='banned'?' sel r':''}" data-v="banned">차단</button></div></div>`+
-   `<div class="fld" id="wBox">${winInner()}</div>`;
+   `<div class="fld sp"><div class="ava">${esc((r.name||'?').trim().charAt(0))}</div><div class="sp-t"><b>${esc(r.name||'이름 없음')}</b><small>${esc(r.mgr||'')}${r.mgr?' · ':''}등록 ${fmt(r.first)}</small></div></div>`+
+   `<div class="fld"><div class="st-opts" id="stAct">`+ST_OPT.map(o=>`<button type="button" class="st-opt${stSel===o.v?' sel':''}" data-v="${o.v}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${o.i}</svg>${o.t}</button>`).join('')+`</div><p class="st-desc" id="stDesc">${ST_OPT.find(o=>o.v===stSel).d}</p></div>`+
+   `<div class="reveal${stSel==='paused'?' open':''}" id="wReveal"><div class="rv"><div class="fld" id="wBox">${winInner()}</div></div></div>`;
   openSheet();
 }
 /* 기록 조회: 활동 기록 / 밴 기록 */
@@ -484,8 +573,8 @@ function editGlobal(){
   openSheet();
 }
 $('shBody').addEventListener('click',e=>{
-  const c=e.target.closest('#stAct .chip');
-  if(c){stSel=c.dataset.v;document.querySelectorAll('#stAct .chip').forEach(x=>{const on=x===c;x.classList.toggle('sel',on);x.classList.toggle('r',on&&stSel==='banned')});return}
+  const c=e.target.closest('#stAct .st-opt');
+  if(c){stSel=c.dataset.v;document.querySelectorAll('#stAct .st-opt').forEach(x=>x.classList.toggle('sel',x===c));$('stDesc').textContent=ST_OPT.find(o=>o.v===stSel).d;$('wReveal').classList.toggle('open',stSel==='paused');return}
   const tb=e.target.closest('#stTab .chip');
   if(tb&&edit){stTab=tb.dataset.v;document.querySelectorAll('#stTab .chip').forEach(x=>x.classList.toggle('sel',x===tb));$('stLog').innerHTML=stLog(students.find(x=>x.id===edit.id)||{});return}
   const wd=e.target.closest('[data-wd]');
@@ -536,9 +625,10 @@ $('shOk').onclick=()=>{
   if(edit.t==='l'){closeSheet();return}
   if(edit.t==='t'||edit.t==='g'){
     const isG=edit.t==='g',r=isG?glob:students.find(x=>x.id===edit.id);
-    const wc=JSON.stringify(ewins)!==JSON.stringify(r?r.wins||[]:[]);
+    const effW=(isG||stSel==='paused')?ewins:[];
+    const wc=JSON.stringify(effW)!==JSON.stringify(r?r.wins||[]:[]);
     if(!r||(isG?!wc:(r.status===stSel&&!wc))){closeSheet();return}
-    const body=isG?{action:'setglobal',wins:ewins}:{action:'set',id:edit.id,status:stSel,wins:ewins};
+    const body=isG?{action:'setglobal',wins:ewins}:{action:'set',id:edit.id,status:stSel,wins:effW};
     busy($('shOk'),true);
     api(body,'/api/students').then(()=>loadStudents()).then(()=>{closeSheet();toast('적용했어요')})
       .catch(e=>{toast(e.message);if(e.status===401)setTimeout(showLogin,900)}).finally(()=>busy($('shOk'),false));
