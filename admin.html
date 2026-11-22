@@ -234,6 +234,11 @@ input:focus{background:var(--card);border-color:var(--blue-main)}
 .purpose-tabs[data-tone=warn] .ptab.sel{color:#9a5b00}
 .purpose-tabs[data-tone=danger] .purpose-bg{background:var(--error-bg)}
 .purpose-tabs[data-tone=danger] .ptab.sel{color:var(--error)}
+.stbox{display:flex;align-items:center;gap:14px;padding:16px;border-radius:16px;background:#ffe9a6;color:#9a5b00}
+.stbox.ban{background:var(--error-bg);color:var(--error)}
+.stbox svg{width:34px;height:34px;flex-shrink:0}
+.stbox b{display:block;font-size:17px;font-weight:700;letter-spacing:-.02em}
+.stbox small{display:block;margin-top:3px;font-size:13px;font-weight:600;opacity:.85}
 .st-desc{margin-top:10px;font-size:13px;color:var(--muted);font-weight:500;line-height:1.5;text-align:center}
 .reveal{display:grid;grid-template-rows:0fr;margin-top:-18px;opacity:0;visibility:hidden;transition:grid-template-rows .42s cubic-bezier(.2,.8,.2,1),margin-top .42s cubic-bezier(.2,.8,.2,1),opacity .3s ease,visibility 0s .42s}
 .reveal.open{grid-template-rows:1fr;margin-top:0;opacity:1;visibility:visible;transition-delay:0s}
@@ -449,7 +454,7 @@ let students=[],stEdit=null,stSel='active';
 const KL={register:'등록',out:'외출',back:'복귀',late:'지각'};
 const fmt=t=>{if(!t)return'-';const d=new Date(t),p=n=>String(n).padStart(2,'0');return p(d.getMonth()+1)+'/'+p(d.getDate())+' '+p(d.getHours())+':'+p(d.getMinutes())};
 let glob={wins:[],hist:[]},ewins=[],stTab='act';
-const HL={active:'정상으로 변경',paused:'일시정지',banned:'차단',win:'외출 제한 시간 변경',blocked:'외출 시도 차단됨'};
+const HL={active:'정상으로 변경',paused:'일시정지',banned:'영구 밴',win:'외출 제한 시간 변경',blocked:'외출 시도 차단됨'};
 const I_DEL='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 12h12"/></svg>';
 const I_BAN='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M6 6l12 12"/></svg>';
 const I_LOG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M4.5 6h.01M4.5 12h.01M4.5 18h.01" stroke-width="3"/></svg>';
@@ -484,14 +489,14 @@ function stState(r){
     return{c:'tmp',txt:ws.length?nextStart(ws)+' 시작':'금지됨',ic:I_STPAUSE,lock:1};
   }
   const l=liftOf((glob.wins||[]).concat(r.wins||[]));
-  if(l)return l.t?{c:'tmp',txt:(l.next?'내일 ':'')+l.t+' 해제',ic:I_STPAUSE}:{c:'ban',txt:'금지됨',ic:I_STBAN};
+  if(l)return l.t?{c:'tmp',txt:(l.next?'내일 ':'')+l.t+' 해제',ic:I_STPAUSE,lock:1,g:1}:{c:'ban',txt:'금지됨',ic:I_STBAN,lock:1,g:1};
   return{c:'',txt:'정상'};
 }
 const logRow=(h,d,t)=>`<div style="padding:6px 0;border-bottom:1px solid var(--line)"><b>${h}</b> <span style="color:var(--muted)">${fmt(t)}</span>${d?`<div style="color:var(--muted)">${esc(d)}</div>`:''}</div>`;
 const histHtml=h=>{h=(h||[]).slice().reverse();return h.length?h.map(l=>logRow(HL[l.a]||l.a,l.d,l.t)).join(''):'<div class="empty">기록이 없어요</div>'};
 function winInner(){
   const own=edit&&edit.t==='t',l=own&&ewins.length?liftOf(ewins):null;
-  return `<div class="label">${own?'일시정지 시간':'밴 시간대'}<small>${own?'지금부터 또는 직접 입력':'이 시간대엔 모든 학생 외출 불가'}</small></div>`+
+  return `<div class="label">일시정지 시간<small>${own?'지금부터 또는 직접 입력':'이 시간대엔 모든 학생 외출 불가'}</small></div>`+
    (own?`<div class="chips qd"><button type="button" class="chip" data-qd="30">30분</button><button type="button" class="chip" data-qd="60">1시간</button><button type="button" class="chip" data-qd="120">2시간</button><button type="button" class="chip" data-qd="180">3시간</button></div>`:'')+
    (l&&l.k?`<div class="wprev">지금 ${remTxt(l.k)}</div>`:'')+
    (ewins.length?ewins.map((w,i)=>`<div class="wrow"><div class="wt">${wTxt(w)}</div><button type="button" class="stepper-btn minus" data-wd="${i}" aria-label="삭제">−</button></div>`).join(''):`<div class="hint" style="margin:0 0 10px">${own?'시간을 정해야 일시정지할 수 있어요':'설정된 시간대가 없어요'}</div>`)+
@@ -507,7 +512,7 @@ function _renderStudents(){
   const rows=students.filter(r=>!q||((r.name||'')+(r.mgr||'')).toLowerCase().includes(q));
   $('stCnt').textContent=students.length+'명';
   $('stRows').innerHTML=rows.length?rows.map(r=>{const s=stState(r),id=esc(r.id);
-    return `<div class="stu${s.c?' '+s.c:''}${s.lock?' lock':''}" data-k="${id}"${s.lock?` data-sa="ban" data-id="${id}"`:''}>`+
+    return `<div class="stu${s.c?' '+s.c:''}${s.lock?' lock':''}" data-k="${id}"${s.lock?` data-sa="state" data-id="${id}"`:''}>`+
       `<div class="stu-img"><svg class="stu-sil" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4.2"/><path d="M3.5 22c0-4.9 3.8-8 8.5-8s8.5 3.1 8.5 8z"/></svg><div class="stu-ov"><span class="stu-nm">${esc(r.name||'이름 없음')}</span></div></div>`+
       (s.c?`<div class="stu-st">${s.ic||''}<span>${esc(s.txt)}</span></div>`:'')+
       (s.lock?'':`<div class="stu-btns">`+
@@ -562,7 +567,7 @@ function stLog(r){
 const ST_OPT=[
   {v:'active',t:'정상',d:'평소처럼 외출을 제출할 수 있어요',i:'<circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.7 2.7L16 9.5"/>'},
   {v:'paused',t:'일시정지',d:'정한 시간 동안만 외출이 금지돼요',i:'<circle cx="12" cy="12" r="9"/><path d="M10 9v6M14 9v6"/>'},
-  {v:'banned',t:'차단',d:'해제할 때까지 외출이 금지돼요',i:'<circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/>'}
+  {v:'banned',t:'영구 밴',d:'해제할 때까지 외출이 금지돼요',i:'<circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/>'}
 ];
 /* 슬라이드 탭: index.html의 moveTabHighlight와 같은 방식 */
 const TONE={paused:'warn',time:'warn',banned:'danger',forever:'danger'};
@@ -584,6 +589,31 @@ function placeTabs(){
   const t=$('stAct');if(!t)return;
   const bg=t.querySelector('.purpose-bg'),sel=t.querySelector('.ptab.sel');
   bg.style.transition='none';moveTabHighlight(sel,bg);void bg.offsetWidth;bg.style.transition='';
+}
+/* 일시정지·영구 밴 상태에서 누르면 현재 상태 + 해제 버튼 */
+/* 전체 해제: 전체 밴을 풀고, 개별 일시정지·영구 밴 학생도 모두 정상으로 되돌림 */
+function releaseAll(){
+  const rest=students.filter(r=>(r.status&&r.status!=='active')||(r.wins&&r.wins.length));
+  return api({action:'setglobal',wins:[]},'/api/students')
+    .then(()=>Promise.all(rest.map(r=>api({action:'set',id:r.id,status:'active',wins:[]},'/api/students'))))
+    .then(()=>loadStudents());
+}
+function viewState(id){
+  const r=id?students.find(x=>x.id===id):null;
+  if(id&&!r)return;
+  const useG=!r||(r.status!=='banned'&&r.status!=='paused');
+  const forever=useG?isForever(glob.wins):r.status==='banned';
+  const ws=forever?[]:(useG?glob.wins:(r.wins||[])).filter(w=>w.s!==w.e);
+  const l=ws.length?liftOf(ws):null;
+  const title=forever?'영구 밴 중':(l?'일시정지 중':'일시정지 설정됨');
+  const sub=forever?(useG?'모든 학생의 외출이 금지돼요':'해제할 때까지 외출이 금지돼요'):(l?remTxt(l.k):(ws.length?'다음 시작 '+nextStart(ws):''));
+  edit={t:'r',g:useG,id:r?r.id:null};
+  $('shTitle').textContent=useG?'전체 밴 상태':'밴 상태';
+  $('shBody').innerHTML=
+   (r?`<div class="fld sp"><div class="ava">${esc((r.name||'?').trim().charAt(0))}</div><div class="sp-t"><b>${esc(r.name||'이름 없음')}</b><small>${esc(r.mgr||'')}${r.mgr?' · ':''}${useG?'전체 밴 적용 중':'등록 '+fmt(r.first)}</small></div></div>`:'')+
+   `<div class="fld"><div class="stbox${forever?' ban':''}">${forever?I_STBAN:I_STPAUSE}<div><b>${title}</b>${sub?`<small>${esc(sub)}</small>`:''}</div></div></div>`+
+   (ws.length?`<div class="fld"><div class="label">일시정지 시간</div>${ws.map(w=>`<div class="wrow"><div class="wt">${wTxt(w)}</div></div>`).join('')}</div>`:'');
+  openSheet(useG?'전체 해제':'해제');
 }
 function editStudent(id){
   const r=students.find(x=>x.id===id);if(!r)return;
@@ -612,9 +642,9 @@ function askDelStudent(id){
   $('dlOv').classList.add('show');$('dl').classList.add('show');
 }
 const G_OPT=[
-  {v:'none',t:'해제',d:'모든 학생이 평소처럼 외출할 수 있어요',i:'<circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.7 2.7L16 9.5"/>'},
-  {v:'time',t:'시간대 밴',d:'정한 시간대에는 모든 학생의 외출이 금지돼요',i:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>'},
-  {v:'forever',t:'무기한 밴',d:'해제할 때까지 모든 학생의 외출이 금지돼요',i:'<circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/>'}
+  {v:'none',t:'해제',d:'모든 학생이 정상으로 돌아와요 (개별 일시정지·영구 밴도 함께 풀려요)',i:'<circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.7 2.7L16 9.5"/>'},
+  {v:'time',t:'일시정지',d:'정한 시간대에는 모든 학생의 외출이 금지돼요',i:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>'},
+  {v:'forever',t:'영구 밴',d:'해제할 때까지 모든 학생의 외출이 금지돼요',i:'<circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/>'}
 ];
 function editGlobal(){
   edit={t:'g'};
@@ -646,12 +676,12 @@ $('shBody').addEventListener('click',e=>{
 });
 document.addEventListener('click',e=>{
   const b=e.target.closest('[data-sa]');
-  if(b){const a=b.dataset.sa,id=b.dataset.id;if(a==='ban')editStudent(id);else if(a==='log')viewLogs(id);else askDelStudent(id);return}
-  if(e.target.closest('#gBtn'))editGlobal();
+  if(b){const a=b.dataset.sa,id=b.dataset.id;if(a==='ban')editStudent(id);else if(a==='state')viewState(id);else if(a==='log')viewLogs(id);else askDelStudent(id);return}
+  if(e.target.closest('#gBtn')){if(glob.wins.length)viewState(null);else editGlobal()}
 });
 
 /* ---------- 편집 시트 ---------- */
-function openSheet(){ $('shOv').classList.add('show');requestAnimationFrame(()=>$('sh').classList.add('show')) }
+function openSheet(label){ $('shOk').textContent=label||'확인';$('shOv').classList.add('show');requestAnimationFrame(()=>$('sh').classList.add('show')) }
 function closeSheet(){ if(document.activeElement&&document.activeElement.blur)document.activeElement.blur();$('shOv').classList.remove('show');$('sh').classList.remove('show');edit=null }
 $('shOv').onclick=closeSheet;
 
@@ -680,12 +710,18 @@ $('shBody').addEventListener('click',e=>{
 $('shOk').onclick=()=>{
   if(!edit)return;
   if(edit.t==='l'){closeSheet();return}
+  if(edit.t==='r'){
+    const isGl=edit.g;busy($('shOk'),true);
+    (isGl?releaseAll():api({action:'set',id:edit.id,status:'active',wins:[]},'/api/students').then(()=>loadStudents())).then(()=>{closeSheet();toast(isGl?'모두 정상으로 돌렸어요':'해제했어요')})
+      .catch(e=>{toast(e.message);if(e.status===401)setTimeout(showLogin,900)}).finally(()=>busy($('shOk'),false));
+    return;
+  }
   if(edit.t==='t'||edit.t==='g'){
     const isG=edit.t==='g',r=isG?glob:students.find(x=>x.id===edit.id);
     let effW;
     if(isG){
       effW=stSel==='forever'?[{s:'00:00',e:'00:00'}]:stSel==='time'?ewins:[];
-      if(stSel==='time'&&!effW.length){toast('밴 시간대를 추가해주세요');return}
+      if(stSel==='time'&&!effW.length){toast('일시정지 시간을 추가해주세요');return}
     }else{
       effW=stSel==='paused'?ewins:[];
       if(stSel==='paused'&&!effW.length){toast('일시정지 시간을 정해주세요');return}
@@ -694,7 +730,7 @@ $('shOk').onclick=()=>{
     if(!r||(isG?!wc:(r.status===stSel&&!wc))){closeSheet();return}
     const body=isG?{action:'setglobal',wins:effW}:{action:'set',id:edit.id,status:stSel,wins:effW};
     busy($('shOk'),true);
-    api(body,'/api/students').then(()=>loadStudents()).then(()=>{closeSheet();toast('적용했어요')})
+    (isG&&stSel==='none'?releaseAll():api(body,'/api/students').then(()=>loadStudents())).then(()=>{closeSheet();toast('적용했어요')})
       .catch(e=>{toast(e.message);if(e.status===401)setTimeout(showLogin,900)}).finally(()=>busy($('shOk'),false));
     return;
   }
