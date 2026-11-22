@@ -38,7 +38,12 @@
 button,input{outline:none}
 html,body{height:100dvh;overflow:hidden;overscroll-behavior-y:none}
 body{font-family:'Pretendard Variable',Pretendard,-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Noto Sans KR',sans-serif;background:var(--bg-main);color:var(--ink);display:flex;flex-direction:column;max-width:480px;margin:0 auto;-webkit-user-select:none;user-select:none}
+body{transition:background-color .35s ease}
 body.is-login{background:var(--card)}
+@keyframes viewIn{0%{opacity:0}100%{opacity:1}}
+#loginView,#adminView{animation:viewIn .42s ease backwards}
+header{animation:viewIn .42s ease backwards}
+.fade-out{opacity:0!important;transition:opacity .24s ease!important;pointer-events:none!important}
 input{-webkit-user-select:text;user-select:text}
 .hide{display:none!important}
 
@@ -99,8 +104,9 @@ input:focus{background:var(--card);border-color:var(--blue-main)}
 .empty{padding:20px;text-align:center;color:var(--muted);font-size:14px;font-weight:500}
 
 /* submit */
-.submitbar{margin-top:auto;position:sticky;bottom:0;margin-left:-20px;margin-right:-20px;padding:16px 20px max(24px,env(safe-area-inset-bottom));background:inherit;z-index:100}
-.submitbar::before{content:"";position:absolute;top:-28px;left:0;width:100%;height:28px;background:linear-gradient(to top,var(--bg-main),rgba(251,251,251,0));pointer-events:none}
+.submitbar{margin-top:auto;position:sticky;bottom:0;margin-left:-20px;margin-right:-20px;padding:12px 20px max(24px,env(safe-area-inset-bottom));background:var(--bg-main);z-index:100}
+.submitbar::before{content:"";position:absolute;top:-16px;left:0;width:100%;height:16px;background:linear-gradient(to top,var(--bg-main),rgba(251,251,251,0));pointer-events:none}
+.login-bar{background:var(--card)}
 .login-bar::before{background:linear-gradient(to top,var(--card),rgba(255,255,255,0))}
 .submit{width:100%;padding:16px;font-size:17px;border-radius:16px;background:var(--blue-main);color:#fff;font-weight:700;position:relative;overflow:hidden}
 .submit.danger{background:var(--error)}
@@ -126,6 +132,8 @@ input:focus{background:var(--card);border-color:var(--blue-main)}
 .latelink{width:fit-content;background:transparent;border:none;border-radius:10px;color:var(--muted);font-size:14px;font-weight:600;padding:6px 12px;cursor:pointer;font-family:inherit}
 .latelink:active,.latelink.pressed{background-color:rgba(0,0,0,.12)!important}
 .latelink.out{color:var(--ink)}
+.latelink.logout{background:var(--error);color:#ffe3e5;padding:8px 14px;font-weight:700}
+.latelink.logout:active,.latelink.logout.pressed{background-color:var(--error)!important}
 .dirty-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--error);margin-left:8px;vertical-align:middle;opacity:0;transition:opacity .3s}
 .dirty .dirty-dot{opacity:1}
 
@@ -173,7 +181,7 @@ input:focus{background:var(--card);border-color:var(--blue-main)}
 
 <header class="hide" id="hdr">
   <div class="who"><b>관리자</b><span>외출기입대장 설정</span></div>
-  <button type="button" class="latelink out" id="btnLogout">로그아웃</button>
+  <button type="button" class="latelink logout" id="btnLogout">로그아웃</button>
 </header>
 
 <!-- 로그인 -->
@@ -210,7 +218,7 @@ input:focus{background:var(--card);border-color:var(--blue-main)}
 
 <!-- 편집 시트 -->
 <div class="bottom-sheet-overlay" id="shOv"></div>
-<div class="bottom-sheet" id="sh">
+<div class="bottom-sheet" id="sh" data-overlay="shOv">
   <div class="bs-header"><h3 id="shTitle"></h3></div>
   <div id="shBody" style="display:flex;flex-direction:column;gap:18px"></div>
   <button type="button" class="btn-simple submit" id="shOk">확인</button>
@@ -258,15 +266,29 @@ const ch=n=>{const c=n.replace(/[^가-힣a-zA-Z]/g,'');return c?c[0]:'?'};
 const SHEET_ICON='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 9h18M3 15h18M9 3v18"/></svg>';
 
 /* ---------- screens ---------- */
+let swapping=false;
+function swapViews(outs,prep,inn){
+  if(swapping)return;swapping=true;
+  if(prep)prep();
+  outs.forEach(e=>e.classList.add('fade-out'));
+  setTimeout(()=>{
+    outs.forEach(e=>{e.classList.add('hide');e.classList.remove('fade-out')});
+    inn();swapping=false;
+  },250);
+}
 function showAdmin(){
-  document.body.classList.remove('is-login');
-  $('loginView').classList.add('hide');$('hdr').classList.remove('hide');$('hdr').classList.add('drop');
-  $('adminView').classList.remove('hide');
+  swapViews([$('loginView')],
+    ()=>document.body.classList.remove('is-login'),
+    ()=>{$('hdr').classList.remove('hide');$('hdr').classList.add('drop');$('adminView').classList.remove('hide')});
 }
 function showLogin(){
   token='';try{sessionStorage.removeItem('adm_tk')}catch(e){}
-  document.body.classList.add('is-login');
-  $('adminView').classList.add('hide');$('hdr').classList.add('hide');$('loginView').classList.remove('hide');$('pw').value='';
+  if($('adminView').classList.contains('hide')){
+    document.body.classList.add('is-login');$('loginView').classList.remove('hide');$('pw').value='';return;
+  }
+  swapViews([$('adminView'),$('hdr')],
+    ()=>{closeSheet();closeDel();document.body.classList.add('is-login')},
+    ()=>{$('loginView').classList.remove('hide');$('pw').value=''});
 }
 function load(){
   return fetch('/api/config',{cache:'no-store'}).then(r=>r.json()).then(c=>{cfg={managers:c.managers||[],sheets:c.sheets||[]};setDirty(false);render()});
@@ -380,6 +402,90 @@ $('dlYes').onclick=()=>{
   (delTarget.isM?cfg.managers:cfg.sheets).splice(delTarget.i,1);
   setDirty(true);render();closeDel();
 };
+
+/* ===== bottom sheet swipe (원본 동일) ===== */
+(function initBottomSheetDrag() {
+  const sheets = document.querySelectorAll('.bottom-sheet');
+  sheets.forEach(sheet => {
+    let startY = 0, startX = 0;
+    let currentDeltaY = 0, currentDeltaX = 0;
+    let isDragging = false;
+    let overlay = null;
+    let scrollTarget = null;
+
+    sheet.addEventListener('touchstart', (e) => {
+      scrollTarget = e.target.closest('.mgr-list, .picker-wheel');
+      if (scrollTarget && scrollTarget.scrollTop > 0) return;
+
+      startY = e.touches[0].clientY;
+      startX = e.touches[0].clientX;
+      isDragging = true;
+      currentDeltaY = 0;
+      currentDeltaX = 0;
+
+      overlay = document.getElementById(sheet.dataset.overlay);
+
+      sheet.style.transition = 'none';
+      if (overlay) overlay.style.transition = 'none';
+    }, { passive: true });
+
+    sheet.addEventListener('touchmove', (e) => {
+      if (!isDragging) return;
+
+      const y = e.touches[0].clientY;
+      const x = e.touches[0].clientX;
+
+      let deltaY = y - startY;
+      let deltaX = x - startX;
+
+      if (scrollTarget && deltaY < 0) {
+        isDragging = false;
+        sheet.style.transform = '';
+        sheet.style.transition = '';
+        if (overlay) {
+          overlay.style.opacity = '';
+          overlay.style.transition = '';
+        }
+        return;
+      }
+
+      if (e.cancelable && !scrollTarget) e.preventDefault();
+
+      if (deltaY < 0) deltaY = deltaY * 0.15;   // 위로 당기면 마찰
+      deltaX = deltaX * 0.08;                   // 좌우는 거의 안 움직임
+
+      currentDeltaY = deltaY;
+      currentDeltaX = deltaX;
+
+      sheet.style.transform = `translate3d(${deltaX}px, ${deltaY}px, 0)`;
+
+      if (deltaY > 0 && overlay) {
+        let opacity = 1 - (deltaY / window.innerHeight) * 2;
+        if (opacity < 0) opacity = 0;
+        overlay.style.opacity = opacity;
+      }
+    }, { passive: false });
+
+    sheet.addEventListener('touchend', () => {
+      if (!isDragging) return;
+      isDragging = false;
+
+      sheet.style.transition = '';
+      sheet.style.transform = '';
+      if (overlay) {
+        overlay.style.transition = '';
+        overlay.style.opacity = '';
+      }
+
+      if (currentDeltaY > 90) {
+        if (overlay) overlay.click();
+      }
+    });
+  });
+})();
+document.querySelectorAll('.bs-header').forEach(header => {
+  header.addEventListener('touchmove', (e) => { e.preventDefault(); }, { passive: false });
+});
 
 /* ---------- start ---------- */
 if(token){load().then(showAdmin).catch(showLogin)}
