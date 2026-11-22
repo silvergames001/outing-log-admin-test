@@ -533,7 +533,7 @@ $('btnSave').onclick=()=>{
 let students=[],stEdit=null,stSel='active';
 const KL={register:'등록',out:'외출',back:'복귀',late:'지각'};
 const fmt=t=>{if(!t)return'-';const d=new Date(t),p=n=>String(n).padStart(2,'0');return p(d.getMonth()+1)+'/'+p(d.getDate())+' '+p(d.getHours())+':'+p(d.getMinutes())};
-let glob={wins:[],hist:[]},ewins=[],stTab='act',qdSel=null;
+let glob={wins:[],hist:[]},ewins=[],stTab='act',qdSel=null,gTouch=false;
 let sortMode='name';try{sortMode=localStorage.getItem('adm_sort')||'name'}catch(e){}
 const SORTS=[{v:'name',t:'이름순'},{v:'mgr',t:'매니저별'}];
 const kc=(a,b)=>String(a||'').localeCompare(String(b||''),'ko');
@@ -641,7 +641,7 @@ function clearQd(){
 function winInner(){
   const own=edit&&edit.t==='t';
   return `<div class="label">타임 아웃 시간</div>`+
-   (own?qdTabsHtml():'')+
+   qdTabsHtml()+
    `<div id="wList">${winList()}</div>`+
    `<div class="wadd"><input type="time" id="wS" value="22:00"><input type="time" id="wE" value="06:00"><button type="button" class="stepper-btn plus" id="wAdd" aria-label="추가">＋</button></div>`;
 }
@@ -877,7 +877,7 @@ function editGlobal(){
   edit={t:'g'};
   const fe=isForever(glob.wins);
   stSel=fe?'forever':(glob.wins.length?'time':'none');
-  ewins=glob.wins.filter(w=>w.s!==w.e).map(w=>({...w}));qdSel=null;
+  ewins=glob.wins.filter(w=>w.s!==w.e).map(w=>({...w}));qdSel=null;gTouch=false;
   $('shTitle').textContent='전체 밴 관리';
   $('shBody').innerHTML=
    `<div class="fld">`+tabsHtml(G_OPT)+`<p class="st-desc" id="stDesc">${G_OPT.find(o=>o.v===stSel).d}</p></div>`+
@@ -886,7 +886,7 @@ function editGlobal(){
 }
 $('shBody').addEventListener('click',e=>{
   const c=e.target.closest('#stAct .ptab');
-  if(c){const O=edit&&edit.t==='g'?G_OPT:ST_OPT;stSel=c.dataset.v;const tabs=$('stAct');tabs.querySelectorAll('.ptab').forEach(x=>x.classList.toggle('sel',x===c));tabs.dataset.tone=TONE[stSel]||'';moveTabHighlight(c,tabs.querySelector('.purpose-bg'));$('stDesc').textContent=O.find(o=>o.v===stSel).d;$('wReveal').classList.toggle('open',stSel==='paused'||stSel==='time');return}
+  if(c){const O=edit&&edit.t==='g'?G_OPT:ST_OPT;if(edit&&edit.t==='g')gTouch=true;stSel=c.dataset.v;const tabs=$('stAct');tabs.querySelectorAll('.ptab').forEach(x=>x.classList.toggle('sel',x===c));tabs.dataset.tone=TONE[stSel]||'';moveTabHighlight(c,tabs.querySelector('.purpose-bg'));$('stDesc').textContent=O.find(o=>o.v===stSel).d;$('wReveal').classList.toggle('open',stSel==='paused'||stSel==='time');return}
   const qd=e.target.closest('[data-qd]');
   if(qd){
     const n=kstMin();ewins=[{s:hm(n),e:hm(n+ +qd.dataset.qd)}];qdSel=+qd.dataset.qd;
@@ -972,7 +972,8 @@ $('shOk').onclick=()=>{
       if(stSel==='paused'&&!effW.length){toast('타임 아웃 시간을 정해주세요');return}
     }
     const wc=JSON.stringify(effW)!==JSON.stringify(r?r.wins||[]:[]);
-    if(!r||(isG?!wc:(r.status===stSel&&!wc))){closeSheet();return}
+    const force=isG&&gTouch&&stSel==='none'&&students.some(x=>(x.status&&x.status!=='active')||(x.wins&&x.wins.length));   // 전체 밴은 이미 없어도, 개별 밴이 남아 있으면 '해제'로 모두 풀기
+    if(!r||(isG?(!wc&&!force):(r.status===stSel&&!wc))){closeSheet();return}
     const body=isG?{action:'setglobal',wins:effW}:{action:'set',id:edit.id,status:stSel,wins:effW};
     busy($('shOk'),true);
     (isG&&stSel==='none'?releaseAll():api(body,'/api/students').then(()=>loadStudents())).then(()=>{closeSheet();toast('적용했어요')})
