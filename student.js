@@ -8,7 +8,7 @@
   }
   var blocked = null, box = null, wins = [];
   var MSG = {
-    banned: ['이용이 제한됐어요', '관리자에게 문의해주세요.'],
+    banned: ['Access Banned', '관리자에게 문의해주세요.'],
     paused: ['이용이 잠시 중지됐어요', '관리자가 확인 중이에요. 잠시 후 다시 확인해주세요.']
   };
 
@@ -22,7 +22,8 @@
       document.body.appendChild(box);
       requestAnimationFrame(function () { requestAnimationFrame(function () { if (box) box.style.opacity = 1; }); });
     }
-    box.innerHTML = '<div style="font-size:22px;font-weight:700;color:#333d4b;letter-spacing:-.02em">' + m[0] + '</div>' +
+    var ic = st === 'banned' ? '<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="#f04452" stroke-width="2.6" stroke-linecap="round" aria-hidden="true" style="flex-shrink:0"><circle cx="12" cy="12" r="8.5"/><path d="M6 6l12 12"/></svg>' : '';
+    box.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;gap:8px;font-size:22px;font-weight:700;color:#333d4b;letter-spacing:-.02em">' + ic + '<span>' + m[0] + '</span></div>' +
       '<div style="font-size:14px;font-weight:500;color:#8b95a1;line-height:1.55">' + m[1] + '</div>' +
       (st === 'paused' ? '<button type="button" id="stuRetry" style="margin-top:14px;border:none;border-radius:16px;background:#3182f6;color:#fff;font:700 16px inherit;font-family:inherit;padding:15px 28px">다시 확인</button>' : '');
     var r = box.querySelector('#stuRetry'); if (r) r.onclick = function () { ping('open'); };
