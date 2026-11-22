@@ -103,6 +103,13 @@ input:focus{background:var(--card);border-color:var(--blue-main)}
 .stepper-btn.minus{color:var(--error)}
 .stepper-btn.plus{color:var(--blue-main)}
 .stepper-btn.wide{width:100%;height:48px;margin-top:8px;font-size:15.5px;gap:6px}
+.bsum-wrap{display:flex;flex-direction:column;gap:10px;padding-top:4px}
+.bsum{display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:16px;background:var(--gray-fill,#f2f4f6);font-size:16px}
+.bsum svg{width:26px;height:26px;flex-shrink:0}
+.bsum-t{flex:1;font-weight:700;color:#4e5968}
+.bsum b{font-size:18px;font-weight:800;color:#191f28}
+.bsum.red b{color:#f04452}
+.bsum.yel b{color:#9a5b00}
 .empty{padding:20px;text-align:center;color:var(--muted);font-size:14px;font-weight:500;grid-column:1/-1}
 
 /* 학생 관리 헤더: [제목] ........ [전체 밴] [🔎 검색…] */
@@ -126,8 +133,12 @@ input:focus{background:var(--card);border-color:var(--blue-main)}
 .stu{position:relative;aspect-ratio:1/1.3;display:flex;flex-direction:column;background:#eceef1;border:2px solid transparent;border-radius:16px;padding:4px;transition:background-color .3s ease,border-color .3s ease}
 .stu-img{position:relative;flex:1;min-height:0;border-radius:11px;background:transparent;overflow:hidden;transition:background-color .3s ease}
 .stu-sil{position:absolute;left:50%;top:46%;width:62%;transform:translate(-50%,-50%);fill:#fff;transition:fill .3s ease}
-.stu-ov{position:absolute;left:7px;right:7px;bottom:5px;z-index:1;min-width:0}
-.stu-nm{display:block;font-size:13px;font-weight:700;color:#4e5968;letter-spacing:-.02em;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.stu-ov{position:absolute;left:5px;right:5px;bottom:5px;z-index:1;min-width:0}
+.sp-t .mg-lb{margin-right:7px;font-size:15px;font-weight:600;color:var(--muted)}
+.sp-t .mg-pill{display:inline-block;padding:4px 11px;border-radius:12px;background:#cfe2ff;color:#3182f6;font-size:15px;font-weight:800;letter-spacing:-.02em;vertical-align:middle}
+.stu-ov{display:flex;align-items:center;gap:3px}
+.stu-mg{flex:1 1 0;min-width:0;padding:2px 3px;border-radius:6px;background:#cfe2ff;color:#3182f6;font-size:9px;text-align:center;font-weight:700;letter-spacing:-.02em;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.stu-nm{flex:0 0 auto;max-width:68%;display:block;font-size:12.5px;font-weight:700;color:#4e5968;letter-spacing:-.02em;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .stu.lock{cursor:pointer}
 .stu.lock .stu-btns{display:none}
 .stu-st{flex-shrink:0;min-height:26px;padding:3px 2px 2px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:13px;font-weight:800;letter-spacing:-.03em;line-height:1.2;word-break:keep-all}
@@ -324,14 +335,13 @@ input:focus{background:var(--card);border-color:var(--blue-main)}
     <div class="sec-head">
       <div class="label">학생 관리<small id="stCnt"></small></div>
       <button type="button" class="gban" id="gBtn" aria-label="전체 밴"><span>전체 밴</span><i class="gdot" id="gTag"></i></button>
-      <button type="button" class="sortbtn" id="sortBtn" aria-label="정렬"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg></button>
+      <button type="button" class="sortbtn" id="sortBtn" aria-label="정렬"><svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg></button>
       <label class="stq">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20.5 20.5L16 16"/></svg>
         <input type="text" id="stQ" placeholder="검색…" aria-label="이름 · 매니저 검색" autocomplete="off">
       </label>
     </div>
     <div class="stu-grid" id="stRows"></div>
-    <p class="hint">학생이 정보를 등록하거나 외출하면 여기에 자동으로 추가돼요. 상태·제한 시간 변경은 저장하기 없이 바로 적용돼요. '전체 밴'에 설정한 시간에는 모든 학생이 외출을 제출할 수 없고, 복귀 기록은 항상 가능해요.</p>
   </div>
   <div class="submitbar" id="saveBar"><button type="button" class="btn-simple submit" id="btnSave">저장하기<span class="dirty-dot"></span></button></div>
 </main>
@@ -505,8 +515,9 @@ const I_DEL='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-w
 const I_BAN='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M6 6l12 12"/></svg>';
 const I_LOG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>';
 const wTxt=w=>w.s+' ~ '+w.e;
+const mgLine=r=>r.mgr?`<span class="mg-lb">담당</span><span class="mg-pill">${esc(r.mgr)}</span>`:'';
 const I_STBAN='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M6 6l12 12"/></svg>';
-const I_STPAUSE='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M10 9v6M14 9v6"/></svg>';
+const I_STPAUSE='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3 2"/></svg>';
 
 /* 제한 시간(한국 시간 기준)에 지금 걸려 있으면 풀리는 시각을 구한다 — student.js의 판정과 동일 */
 const p2=n=>String(n).padStart(2,'0');
@@ -560,7 +571,7 @@ function _renderStudents(){
   $('stCnt').textContent=students.length+'명';
   $('stRows').innerHTML=rows.length?rows.map(r=>{const s=stState(r),id=esc(r.id);
     return `<div class="stu${s.c?' '+s.c:''}${s.lock?' lock':''}" data-k="${id}"${s.lock?` data-sa="state" data-id="${id}"`:''}>`+
-      `<div class="stu-img"><svg class="stu-sil" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4.2"/><path d="M3.5 22c0-4.9 3.8-8 8.5-8s8.5 3.1 8.5 8z"/></svg><div class="stu-ov"><span class="stu-nm">${esc(r.name||'이름 없음')}</span></div></div>`+
+      `<div class="stu-img"><svg class="stu-sil" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4.2"/><path d="M3.5 22c0-4.9 3.8-8 8.5-8s8.5 3.1 8.5 8z"/></svg><div class="stu-ov"><span class="stu-nm">${esc(r.name||'이름 없음')}</span>${r.mgr?`<span class="stu-mg">${esc(r.mgr)}</span>`:''}</div></div>`+
       (s.c?`<div class="stu-st">${s.ic||''}<span>${esc(s.txt)}</span></div>`:'')+
       (s.lock?'':`<div class="stu-btns">`+
         `<button type="button" class="rbtn del" data-sa="del" data-id="${id}" aria-label="학생 삭제">${I_DEL}</button>`+
@@ -626,15 +637,22 @@ $('sortList').addEventListener('click',e=>{
 window.addEventListener('resize',()=>{if($('sortMenu').classList.contains('show'))placeSort()});
 /* 제한 시간이 시작·종료되면 카드 색이 바뀌도록 주기적으로 다시 그림 */
 setInterval(()=>{if(!$('adminView').classList.contains('hide'))renderStudents()},30000);
+const I_RED='<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6.5" y="3" width="11" height="17" rx="2.2" transform="rotate(8 12 11.5)" fill="#f04452"/></svg>';
+const I_YEL='<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6.5" y="3" width="11" height="17" rx="2.2" transform="rotate(8 12 11.5)" fill="#ffc928"/></svg>';
+function banSum(h){
+  h=h||[];const nb=h.filter(x=>x.a==='banned').length,np=h.filter(x=>x.a==='paused').length;
+  const row=(ic,t,n,c)=>`<div class="bsum ${c}">${ic}<span class="bsum-t">${t}</span><b>${n}번</b></div>`;
+  return `<div class="bsum-wrap">${row(I_RED,'영구 밴',nb,'red')}${row(I_YEL,'일시정지',np,'yel')}</div>`;
+}
 function stLog(r){
-  if(stTab==='ban')return histHtml(r.hist);
+  if(stTab==='ban')return banSum(r.hist);
   const l=(r.logs||[]).slice().reverse();
   return l.length?l.map(x=>logRow(KL[x.k]||x.k,x.d,x.t)).join(''):'<div class="empty">기록이 없어요</div>';
 }
 /* 밴 관리: 상태(정상/일시정지/차단) + 개별 외출 제한 시간 */
 const ST_OPT=[
   {v:'active',t:'정상',d:'평소처럼 외출을 제출할 수 있어요',i:'<circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.7 2.7L16 9.5"/>'},
-  {v:'paused',t:'일시정지',d:'정한 시간 동안만 외출이 금지돼요',i:'<circle cx="12" cy="12" r="9"/><path d="M10 9v6M14 9v6"/>'},
+  {v:'paused',t:'일시정지',d:'정한 시간 동안만 외출이 금지돼요',i:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>'},
   {v:'banned',t:'영구 밴',d:'해제할 때까지 외출이 금지돼요',i:'<circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/>'}
 ];
 /* 슬라이드 탭: index.html의 moveTabHighlight와 같은 방식 */
@@ -653,8 +671,8 @@ function tabsHtml(O){
     O.map(o=>`<button type="button" class="ptab${stSel===o.v?' sel':''}" data-v="${o.v}"><span class="ptab-label">${o.t}</span></button>`).join('')+`</div></div>`;
 }
 /* 시트가 열릴 때는 하이라이트가 왼쪽에서 미끄러져 오지 않고 바로 제자리에 놓이게 함 */
-function placeTabs(){
-  const t=$('stAct');if(!t)return;
+function placeTabs(id){
+  const t=$(id||'stAct');if(!t)return;
   const bg=t.querySelector('.purpose-bg'),sel=t.querySelector('.ptab.sel');
   bg.style.transition='none';moveTabHighlight(sel,bg);void bg.offsetWidth;bg.style.transition='';
 }
@@ -678,7 +696,7 @@ function viewState(id){
   edit={t:'r',g:useG,id:r?r.id:null};
   $('shTitle').textContent=useG?'전체 밴 상태':'밴 상태';
   $('shBody').innerHTML=
-   (r?`<div class="fld sp"><div class="ava">${esc((r.name||'?').trim().charAt(0))}</div><div class="sp-t"><b>${esc(r.name||'이름 없음')}</b><small>${esc(r.mgr||'')}${r.mgr?' · ':''}${useG?'전체 밴 적용 중':'등록 '+fmt(r.first)}</small></div></div>`:'')+
+   (r?`<div class="fld sp"><div class="ava">${esc((r.name||'?').trim().charAt(0))}</div><div class="sp-t"><b>${esc(r.name||'이름 없음')}</b><small>${mgLine(r)}${useG?(r.mgr?' · ':'')+'전체 밴 적용 중':''}</small></div></div>`:'')+
    `<div class="fld"><div class="stbox${forever?' ban':''}">${forever?I_STBAN:I_STPAUSE}<div><b>${title}</b>${sub?`<small>${esc(sub)}</small>`:''}</div></div></div>`+
    (ws.length?`<div class="fld"><div class="label">일시정지 시간</div>${ws.map(w=>`<div class="wrow"><div class="wt">${wTxt(w)}</div></div>`).join('')}</div>`:'');
   openSheet(useG?'전체 해제':'해제');
@@ -688,7 +706,7 @@ function editStudent(id){
   edit={t:'t',id};stSel=r.status||'active';ewins=(r.wins||[]).map(w=>({...w}));
   $('shTitle').textContent='밴 관리';
   $('shBody').innerHTML=
-   `<div class="fld sp"><div class="ava">${esc((r.name||'?').trim().charAt(0))}</div><div class="sp-t"><b>${esc(r.name||'이름 없음')}</b><small>${esc(r.mgr||'')}${r.mgr?' · ':''}등록 ${fmt(r.first)}</small></div></div>`+
+   `<div class="fld sp"><div class="ava">${esc((r.name||'?').trim().charAt(0))}</div><div class="sp-t"><b>${esc(r.name||'이름 없음')}</b><small>${mgLine(r)}</small></div></div>`+
    `<div class="fld">`+tabsHtml(ST_OPT)+`<p class="st-desc" id="stDesc">${ST_OPT.find(o=>o.v===stSel).d}</p></div>`+
    `<div class="reveal${stSel==='paused'?' open':''}" id="wReveal"><div class="rv"><div class="fld" id="wBox">${winInner()}</div></div></div>`;
   placeTabs();openSheet();
@@ -699,9 +717,9 @@ function viewLogs(id){
   edit={t:'l',id};stTab='act';
   $('shTitle').textContent=(r.name||'학생')+' 기록';
   $('shBody').innerHTML=
-   `<div class="fld"><div class="label">${esc(r.mgr||'')}<small>최근 ${fmt(r.last)}</small></div></div>`+
-   `<div class="fld"><div class="chips" id="stTab" style="margin-bottom:8px"><button type="button" class="chip sel" data-v="act">활동 기록</button><button type="button" class="chip" data-v="ban">밴 기록</button></div><div id="stLog" style="font-size:13.5px;font-weight:500;line-height:1.5">${stLog(r)}</div></div>`;
-  openSheet();
+   (r.mgr?`<div class="fld sp-t" style="padding-top:4px;flex-direction:row;align-items:center">${mgLine(r)}</div>`:'')+
+   `<div class="fld"><div class="purpose-scroll-wrap" style="padding:4px;margin-bottom:10px"><div class="purpose-tabs" id="stTab"><div class="purpose-bg"></div><button type="button" class="ptab sel" data-v="act"><span class="ptab-label">활동 기록</span></button><button type="button" class="ptab" data-v="ban"><span class="ptab-label">밴 기록</span></button></div></div><div id="stLog" style="font-size:13.5px;font-weight:500;line-height:1.5">${stLog(r)}</div></div>`;
+  placeTabs('stTab');openSheet();
 }
 function askDelStudent(id){
   const r=students.find(x=>x.id===id);if(!r)return;
@@ -730,8 +748,8 @@ $('shBody').addEventListener('click',e=>{
   if(c){const O=edit&&edit.t==='g'?G_OPT:ST_OPT;stSel=c.dataset.v;const tabs=$('stAct');tabs.querySelectorAll('.ptab').forEach(x=>x.classList.toggle('sel',x===c));tabs.dataset.tone=TONE[stSel]||'';moveTabHighlight(c,tabs.querySelector('.purpose-bg'));$('stDesc').textContent=O.find(o=>o.v===stSel).d;$('wReveal').classList.toggle('open',stSel==='paused'||stSel==='time');return}
   const qd=e.target.closest('[data-qd]');
   if(qd){const n=kstMin();ewins=[{s:hm(n),e:hm(n+ +qd.dataset.qd)}];$('wBox').innerHTML=winInner();return}
-  const tb=e.target.closest('#stTab .chip');
-  if(tb&&edit){stTab=tb.dataset.v;document.querySelectorAll('#stTab .chip').forEach(x=>x.classList.toggle('sel',x===tb));$('stLog').innerHTML=stLog(students.find(x=>x.id===edit.id)||{});return}
+  const tb=e.target.closest('#stTab .ptab');
+  if(tb&&edit){stTab=tb.dataset.v;const tt=$('stTab');tt.querySelectorAll('.ptab').forEach(x=>x.classList.toggle('sel',x===tb));moveTabHighlight(tb,tt.querySelector('.purpose-bg'));$('stLog').innerHTML=stLog(students.find(x=>x.id===edit.id)||{});return}
   const wd=e.target.closest('[data-wd]');
   if(wd){ewins.splice(+wd.dataset.wd,1);$('wBox').innerHTML=winInner();return}
   if(e.target.closest('#wAdd')){
