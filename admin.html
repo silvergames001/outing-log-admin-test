@@ -192,17 +192,15 @@ input:focus{background:var(--card);border-color:var(--blue-main)}
 .err-shake{animation:cmShake .45s cubic-bezier(.36,.07,.19,.97) both!important}
 
 /* bottom sheet */
-.bottom-sheet-overlay{position:fixed;inset:0;background:rgba(0,0,0,.30);backdrop-filter:blur(0);-webkit-backdrop-filter:blur(0);z-index:1100;opacity:0;visibility:hidden;transition:opacity .4s cubic-bezier(.4,0,.2,1),backdrop-filter .4s ease,-webkit-backdrop-filter .4s ease,visibility 0s .4s}
-.bottom-sheet-overlay.show{opacity:1;visibility:visible;backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);transition:opacity .5s cubic-bezier(.25,.8,.25,1),backdrop-filter .5s ease,-webkit-backdrop-filter .5s ease,visibility 0s}
+.bottom-sheet-overlay{position:fixed;inset:0;background:rgba(0,0,0,.30);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);z-index:1100;opacity:0;visibility:hidden;transition:opacity .4s cubic-bezier(.4,0,.2,1),visibility 0s .4s}
+.bottom-sheet-overlay.show{opacity:1;visibility:visible;transition:opacity .45s cubic-bezier(.25,.8,.25,1),visibility 0s}
 .bottom-sheet{position:fixed;bottom:max(12px,env(safe-area-inset-bottom));left:11px;width:calc(100% - 22px);max-width:458px;margin:0 auto;right:11px;background:var(--bg-main);border-radius:22px;z-index:1101;padding:32px 18px 21px;opacity:1;transform:translate3d(0,calc(100% + 28px),0);visibility:hidden;will-change:transform;transition:transform .42s cubic-bezier(.4,0,.2,1),visibility 0s .42s;display:flex;flex-direction:column;gap:18px;box-shadow:0 12px 40px rgba(0,0,0,.15)}
 .bottom-sheet.show{transform:translate3d(0,0,0);visibility:visible;transition:transform .62s var(--sheet-enter,cubic-bezier(.22,1,.36,1)),visibility 0s}
 .bottom-sheet::before{content:'';position:absolute;top:12px;left:50%;transform:translateX(-50%);width:40px;height:4px;background:var(--line);border-radius:2px}
 .bs-header{display:flex;justify-content:center;margin-bottom:2px}
 .bs-header h3{font-size:20px;font-weight:700}
-@keyframes sheetItemFadeIn{0%{opacity:0;transform:translateY(12px)}100%{opacity:1;transform:none}}
-.bottom-sheet.show .bs-header{animation:sheetItemFadeIn .5s cubic-bezier(.22,1,.36,1) .08s backwards}
-.bottom-sheet.show .fld{animation:sheetItemFadeIn .55s cubic-bezier(.22,1,.36,1) backwards}
-.bottom-sheet.show .fld:nth-child(1){animation-delay:.12s}.bottom-sheet.show .fld:nth-child(2){animation-delay:.17s}.bottom-sheet.show .fld:nth-child(3){animation-delay:.22s}.bottom-sheet.show .fld:nth-child(4){animation-delay:.27s}
+@keyframes shBodyIn{0%{opacity:0}100%{opacity:1}}
+.bottom-sheet.show #shBody{animation:shBodyIn .4s ease .12s backwards}
 .fld .label{font-size:14px;margin-bottom:8px}
 .chips{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
 .chip{background:var(--gray-fill);border:none;border-radius:14px;padding:16px 8px;font-size:15px;font-weight:500;cursor:pointer;color:var(--muted);font-family:inherit;transition:all .2s var(--toss-spring)}
@@ -217,13 +215,15 @@ input:focus{background:var(--card);border-color:var(--blue-main)}
 .st-opts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .st-opt{display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 6px 12px;border:1.5px solid transparent;border-radius:16px;background:var(--gray-fill);color:var(--muted);font-family:inherit;font-size:14px;font-weight:600;cursor:pointer}
 .st-opt svg{width:24px;height:24px}
-.st-opt[data-v=active].sel{background:var(--blue-light);color:var(--blue-main);border-color:var(--blue-main)}
-.st-opt[data-v=paused].sel{background:#ffe9a6;color:#9a5b00;border-color:#ffc928}
-.st-opt[data-v=banned].sel{background:var(--error-bg);color:var(--error);border-color:var(--error)}
+.st-opt[data-v=active].sel,.st-opt[data-v=none].sel{background:var(--blue-light);color:var(--blue-main);border-color:var(--blue-main)}
+.st-opt[data-v=paused].sel,.st-opt[data-v=time].sel{background:#ffe9a6;color:#9a5b00;border-color:#ffc928}
+.st-opt[data-v=banned].sel,.st-opt[data-v=forever].sel{background:var(--error-bg);color:var(--error);border-color:var(--error)}
 .st-desc{margin-top:10px;font-size:13px;color:var(--muted);font-weight:500;line-height:1.5;text-align:center}
 .reveal{display:grid;grid-template-rows:0fr;margin-top:-18px;opacity:0;visibility:hidden;transition:grid-template-rows .42s cubic-bezier(.2,.8,.2,1),margin-top .42s cubic-bezier(.2,.8,.2,1),opacity .3s ease,visibility 0s .42s}
 .reveal.open{grid-template-rows:1fr;margin-top:0;opacity:1;visibility:visible;transition-delay:0s}
 .reveal>.rv{overflow:hidden;min-height:0}
+.qd{grid-template-columns:repeat(4,1fr);margin-bottom:10px;gap:8px}
+.qd .chip{padding:12px 4px;font-size:14px;font-weight:600}
 .wrow{display:flex;align-items:center;gap:8px;margin-bottom:8px}
 .wrow .wt{flex:1;min-width:0;background:var(--gray-fill);border-radius:14px;padding:13px 16px;font-size:15.5px;font-weight:600}
 .wadd{display:flex;align-items:center;gap:8px}
@@ -453,24 +453,28 @@ function nextStart(ws){
   const d=new Date(Date.now()+9*3600e3),n=d.getUTCHours()*60+d.getUTCMinutes();
   return ws.map(w=>({s:w.s,k:(toMin(w.s)-n+1440)%1440})).sort((a,b)=>a.k-b.k)[0].s;
 }
+const isForever=ws=>(ws||[]).some(w=>w.s===w.e);
+const kstMin=()=>{const d=new Date(Date.now()+9*3600e3);return d.getUTCHours()*60+d.getUTCMinutes()};
+const hm=m=>{m=((m%1440)+1440)%1440;return p2(m/60|0)+':'+p2(m%60)};
 function stState(r){
-  if(r.status==='banned')return{c:'ban',txt:'무기한',lock:1};
+  if(r.status==='banned')return{c:'ban',txt:'금지됨',lock:1};
   if(r.status==='paused'){
     const ws=r.wins||[],pl=liftOf(ws);
     if(pl&&pl.k)return{c:'tmp',txt:pl.k>=60?remTxt(pl.k).replace(' 남음',''):remTxt(pl.k),lock:1};
-    return{c:'tmp',txt:ws.length?nextStart(ws)+' 시작':'무기한',lock:1};
+    return{c:'tmp',txt:ws.length?nextStart(ws)+' 시작':'금지됨',lock:1};
   }
   const l=liftOf((glob.wins||[]).concat(r.wins||[]));
-  if(l)return{c:'tmp',txt:l.t?(l.next?'내일 ':'')+l.t+' 해제':'상시 제한'};
+  if(l)return l.t?{c:'tmp',txt:(l.next?'내일 ':'')+l.t+' 해제'}:{c:'ban',txt:'금지됨'};
   return{c:'',txt:'정상'};
 }
 const logRow=(h,d,t)=>`<div style="padding:6px 0;border-bottom:1px solid var(--line)"><b>${h}</b> <span style="color:var(--muted)">${fmt(t)}</span>${d?`<div style="color:var(--muted)">${esc(d)}</div>`:''}</div>`;
 const histHtml=h=>{h=(h||[]).slice().reverse();return h.length?h.map(l=>logRow(HL[l.a]||l.a,l.d,l.t)).join(''):'<div class="empty">기록이 없어요</div>'};
 function winInner(){
   const own=edit&&edit.t==='t',l=own&&ewins.length?liftOf(ewins):null;
-  return `<div class="label">${own?'일시정지 시간':'외출 제한 시간'}<small>${own?'이 시간 동안 외출 불가':'이 시간엔 외출 불가'}</small></div>`+
+  return `<div class="label">${own?'일시정지 시간':'밴 시간대'}<small>${own?'지금부터 또는 직접 입력':'이 시간대엔 모든 학생 외출 불가'}</small></div>`+
+   (own?`<div class="chips qd"><button type="button" class="chip" data-qd="30">30분</button><button type="button" class="chip" data-qd="60">1시간</button><button type="button" class="chip" data-qd="120">2시간</button><button type="button" class="chip" data-qd="180">3시간</button></div>`:'')+
    (l&&l.k?`<div class="wprev">지금 ${remTxt(l.k)}</div>`:'')+
-   (ewins.length?ewins.map((w,i)=>`<div class="wrow"><div class="wt">${wTxt(w)}</div><button type="button" class="stepper-btn minus" data-wd="${i}" aria-label="삭제">−</button></div>`).join(''):`<div class="hint" style="margin:0 0 10px">${own?'시간을 추가하지 않으면 해제할 때까지 일시정지돼요':'설정된 시간이 없어요'}</div>`)+
+   (ewins.length?ewins.map((w,i)=>`<div class="wrow"><div class="wt">${wTxt(w)}</div><button type="button" class="stepper-btn minus" data-wd="${i}" aria-label="삭제">−</button></div>`).join(''):`<div class="hint" style="margin:0 0 10px">${own?'시간을 정해야 일시정지할 수 있어요':'설정된 시간대가 없어요'}</div>`)+
    `<div class="wadd"><input type="time" id="wS" value="22:00"><input type="time" id="wE" value="06:00"><button type="button" class="stepper-btn plus" id="wAdd" aria-label="추가">＋</button></div>`;
 }
 function loadStudents(){return api({action:'list'},'/api/students').then(j=>{students=j.students||[];glob=j.global||{wins:[],hist:[]};renderStudents();renderGlobal()})}
@@ -537,8 +541,8 @@ function stLog(r){
 /* 밴 관리: 상태(정상/일시정지/차단) + 개별 외출 제한 시간 */
 const ST_OPT=[
   {v:'active',t:'정상',d:'평소처럼 외출을 제출할 수 있어요',i:'<circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.7 2.7L16 9.5"/>'},
-  {v:'paused',t:'일시정지',d:'정한 시간 동안만 외출을 제출할 수 없어요',i:'<circle cx="12" cy="12" r="9"/><path d="M10 9v6M14 9v6"/>'},
-  {v:'banned',t:'차단',d:'해제할 때까지 외출을 제출할 수 없어요',i:'<circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/>'}
+  {v:'paused',t:'일시정지',d:'정한 시간 동안만 외출이 금지돼요',i:'<circle cx="12" cy="12" r="9"/><path d="M10 9v6M14 9v6"/>'},
+  {v:'banned',t:'차단',d:'해제할 때까지 외출이 금지돼요',i:'<circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/>'}
 ];
 function editStudent(id){
   const r=students.find(x=>x.id===id);if(!r)return;
@@ -566,15 +570,27 @@ function askDelStudent(id){
   $('dlDesc').innerHTML=`<b>${esc(r.name||'이름 없음')}</b> 학생과 기록을 모두 지워요.<br>다시 등록하면 새로 추가돼요.`;
   $('dlOv').classList.add('show');$('dl').classList.add('show');
 }
+const G_OPT=[
+  {v:'none',t:'해제',d:'모든 학생이 평소처럼 외출할 수 있어요',i:'<circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.7 2.7L16 9.5"/>'},
+  {v:'time',t:'시간대 밴',d:'정한 시간대에는 모든 학생의 외출이 금지돼요',i:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>'},
+  {v:'forever',t:'무기한 밴',d:'해제할 때까지 모든 학생의 외출이 금지돼요',i:'<circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/>'}
+];
 function editGlobal(){
-  edit={t:'g'};ewins=glob.wins.map(w=>({...w}));
-  $('shTitle').textContent='전체 밴';
-  $('shBody').innerHTML=`<div class="fld" id="wBox">${winInner()}</div><div class="fld"><div class="label">밴 기록<small>${(glob.hist||[]).length}건</small></div><div style="font-size:13.5px;font-weight:500;line-height:1.5">${histHtml(glob.hist)}</div></div>`;
+  edit={t:'g'};
+  const fe=isForever(glob.wins);
+  stSel=fe?'forever':(glob.wins.length?'time':'none');
+  ewins=glob.wins.filter(w=>w.s!==w.e).map(w=>({...w}));
+  $('shTitle').textContent='전체 밴 관리';
+  $('shBody').innerHTML=
+   `<div class="fld"><div class="st-opts" id="stAct">`+G_OPT.map(o=>`<button type="button" class="st-opt${stSel===o.v?' sel':''}" data-v="${o.v}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${o.i}</svg>${o.t}</button>`).join('')+`</div><p class="st-desc" id="stDesc">${G_OPT.find(o=>o.v===stSel).d}</p></div>`+
+   `<div class="reveal${stSel==='time'?' open':''}" id="wReveal"><div class="rv"><div class="fld" id="wBox">${winInner()}</div></div></div>`;
   openSheet();
 }
 $('shBody').addEventListener('click',e=>{
   const c=e.target.closest('#stAct .st-opt');
-  if(c){stSel=c.dataset.v;document.querySelectorAll('#stAct .st-opt').forEach(x=>x.classList.toggle('sel',x===c));$('stDesc').textContent=ST_OPT.find(o=>o.v===stSel).d;$('wReveal').classList.toggle('open',stSel==='paused');return}
+  if(c){const O=edit&&edit.t==='g'?G_OPT:ST_OPT;stSel=c.dataset.v;document.querySelectorAll('#stAct .st-opt').forEach(x=>x.classList.toggle('sel',x===c));$('stDesc').textContent=O.find(o=>o.v===stSel).d;$('wReveal').classList.toggle('open',stSel==='paused'||stSel==='time');return}
+  const qd=e.target.closest('[data-qd]');
+  if(qd){const n=kstMin();ewins=[{s:hm(n),e:hm(n+ +qd.dataset.qd)}];$('wBox').innerHTML=winInner();return}
   const tb=e.target.closest('#stTab .chip');
   if(tb&&edit){stTab=tb.dataset.v;document.querySelectorAll('#stTab .chip').forEach(x=>x.classList.toggle('sel',x===tb));$('stLog').innerHTML=stLog(students.find(x=>x.id===edit.id)||{});return}
   const wd=e.target.closest('[data-wd]');
@@ -625,10 +641,17 @@ $('shOk').onclick=()=>{
   if(edit.t==='l'){closeSheet();return}
   if(edit.t==='t'||edit.t==='g'){
     const isG=edit.t==='g',r=isG?glob:students.find(x=>x.id===edit.id);
-    const effW=(isG||stSel==='paused')?ewins:[];
+    let effW;
+    if(isG){
+      effW=stSel==='forever'?[{s:'00:00',e:'00:00'}]:stSel==='time'?ewins:[];
+      if(stSel==='time'&&!effW.length){toast('밴 시간대를 추가해주세요');return}
+    }else{
+      effW=stSel==='paused'?ewins:[];
+      if(stSel==='paused'&&!effW.length){toast('일시정지 시간을 정해주세요');return}
+    }
     const wc=JSON.stringify(effW)!==JSON.stringify(r?r.wins||[]:[]);
     if(!r||(isG?!wc:(r.status===stSel&&!wc))){closeSheet();return}
-    const body=isG?{action:'setglobal',wins:ewins}:{action:'set',id:edit.id,status:stSel,wins:effW};
+    const body=isG?{action:'setglobal',wins:effW}:{action:'set',id:edit.id,status:stSel,wins:effW};
     busy($('shOk'),true);
     api(body,'/api/students').then(()=>loadStudents()).then(()=>{closeSheet();toast('적용했어요')})
       .catch(e=>{toast(e.message);if(e.status===401)setTimeout(showLogin,900)}).finally(()=>busy($('shOk'),false));
