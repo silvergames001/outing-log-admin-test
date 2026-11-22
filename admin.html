@@ -133,12 +133,15 @@ input:focus{background:var(--card);border-color:var(--blue-main)}
 .stu{position:relative;aspect-ratio:1/1.3;display:flex;flex-direction:column;background:#eceef1;border:2px solid transparent;border-radius:16px;padding:4px;transition:background-color .3s ease,border-color .3s ease}
 .stu-img{position:relative;flex:1;min-height:0;border-radius:11px;background:transparent;overflow:hidden;transition:background-color .3s ease}
 .stu-sil{position:absolute;left:50%;top:46%;width:62%;transform:translate(-50%,-50%);fill:#fff;transition:fill .3s ease}
-.stu-ov{position:absolute;left:5px;right:5px;bottom:5px;z-index:1;min-width:0}
-.sp-t .mg-lb{margin-right:7px;font-size:15px;font-weight:600;color:var(--muted)}
-.sp-t .mg-pill{display:inline-block;padding:4px 11px;border-radius:12px;background:#cfe2ff;color:#3182f6;font-size:15px;font-weight:800;letter-spacing:-.02em;vertical-align:middle}
-.stu-ov{display:flex;align-items:center;gap:3px}
-.stu-mg{flex:1 1 0;min-width:0;padding:2px 3px;border-radius:6px;background:#cfe2ff;color:#3182f6;font-size:9px;text-align:center;font-weight:700;letter-spacing:-.02em;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.stu-nm{flex:0 0 auto;max-width:68%;display:block;font-size:12.5px;font-weight:700;color:#4e5968;letter-spacing:-.02em;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.stu-ov{position:absolute;left:4px;right:4px;bottom:4px;z-index:1;min-width:0}
+.mg-row{display:inline-flex;align-items:center;gap:6px;min-width:0;vertical-align:middle}
+.mg-lb{flex-shrink:0;font-size:13px;color:var(--muted);font-weight:500}
+.mgr-icon{display:inline-flex;width:24px;height:24px;flex-shrink:0;overflow:visible}
+.mgr-tag{display:inline-block;padding:4px 7px;border-radius:7px;background:var(--blue-light);color:var(--blue-main);font-size:13px;font-weight:700;letter-spacing:-.01em;line-height:1.3;white-space:nowrap;flex-shrink:1;min-width:0}
+.stu-ov{display:flex;align-items:center;gap:2px}
+.stu-mg{flex:0 1 auto;min-width:0;padding:2px 3px;border-radius:4px;background:var(--blue-light);color:var(--blue-main);font-size:9px;font-weight:700;letter-spacing:-.02em;line-height:1.3;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.stu-mg.ic{display:inline-flex;width:16px;height:16px;padding:0;background:none;overflow:visible}
+.stu-nm{flex:0 0 auto;max-width:68%;display:block;font-size:12px;font-weight:700;color:#4e5968;letter-spacing:-.02em;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .stu.lock{cursor:pointer}
 .stu.lock .stu-btns{display:none}
 .stu-st{flex-shrink:0;min-height:26px;padding:3px 2px 2px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:13px;font-weight:800;letter-spacing:-.03em;line-height:1.2;word-break:keep-all}
@@ -510,12 +513,17 @@ let glob={wins:[],hist:[]},ewins=[],stTab='act';
 let sortMode='name';try{sortMode=localStorage.getItem('adm_sort')||'name'}catch(e){}
 const SORTS=[{v:'name',t:'이름순'},{v:'mgr',t:'매니저별'}];
 const kc=(a,b)=>String(a||'').localeCompare(String(b||''),'ko');
-const HL={active:'정상으로 변경',paused:'일시정지',banned:'영구 밴',win:'외출 제한 시간 변경',blocked:'외출 시도 차단됨'};
+const HL={active:'정상으로 변경',paused:'타임 아웃',banned:'영구 밴',win:'외출 제한 시간 변경',blocked:'외출 시도 차단됨'};
 const I_DEL='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 12h12"/></svg>';
 const I_BAN='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M6 6l12 12"/></svg>';
 const I_LOG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>';
 const wTxt=w=>w.s+' ~ '+w.e;
-const mgLine=r=>r.mgr?`<span class="mg-lb">담당</span><span class="mg-pill">${esc(r.mgr)}</span>`:'';
+/* 담당 뱃지: index.html의 .mgr-label / .mgr-tag / .mgr-icon 과 동일 (이모지 Ⓜ️·™️는 M·TM, '잘 모름'은 아이콘) */
+const unknownSvg=`<svg viewBox="0 0 100 100" style="width:100%;height:100%;display:block;"><circle cx="50" cy="50" r="50" fill="#e5e8eb" /><path d="M 28 42 A 12 12 0 0 0 46 42" stroke="#b0b8c1" stroke-width="7" stroke-linecap="round" fill="none" /><path d="M 54 42 A 12 12 0 0 0 72 42" stroke="#b0b8c1" stroke-width="7" stroke-linecap="round" fill="none" /><path d="M 38 64 A 12 12 0 0 1 62 64 Z" fill="#b0b8c1" /></svg>`;
+const mgPlain=m=>String(m||'').replace(/Ⓜ\uFE0F?/g,'M').replace(/™\uFE0F?/g,'TM');
+const isUnk=m=>String(m||'').includes('잘 모름');
+const mgTag=m=>isUnk(m)?`<span class="mgr-icon" aria-label="잘 모름">${unknownSvg}</span>`:`<span class="mgr-tag">${esc(mgPlain(m))}</span>`;
+const mgLine=r=>r.mgr?`<span class="mg-row"><span class="mg-lb">담당</span>${mgTag(r.mgr)}</span>`:'';
 const I_STBAN='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M6 6l12 12"/></svg>';
 const I_STPAUSE='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3 2"/></svg>';
 
@@ -529,7 +537,7 @@ function liftOf(wins){
   for(let k=1;k<=1440;k++){const m=(n+k)%1440;if(!wins.some(w=>inWin(w,m)))return{t:p2(m/60|0)+':'+p2(m%60),next:n+k>=1440,k}}
   return{t:''};
 }
-/* 카드 상태: 차단=빨강(ban) · 일시정지/지금 제한 시간 중=노랑(tmp) · 그 외 회색 */
+/* 카드 상태: 차단=빨강(ban) · 타임 아웃/지금 제한 시간 중=노랑(tmp) · 그 외 회색 */
 const remTxt=k=>{const h=k/60|0,m=k%60;return (h?h+'시간 ':'')+(m?m+'분 ':'')+'남음'};
 function nextStart(ws){
   const d=new Date(Date.now()+9*3600e3),n=d.getUTCHours()*60+d.getUTCMinutes();
@@ -553,10 +561,10 @@ const logRow=(h,d,t)=>`<div style="padding:6px 0;border-bottom:1px solid var(--l
 const histHtml=h=>{h=(h||[]).slice().reverse();return h.length?h.map(l=>logRow(HL[l.a]||l.a,l.d,l.t)).join(''):'<div class="empty">기록이 없어요</div>'};
 function winInner(){
   const own=edit&&edit.t==='t',l=own&&ewins.length?liftOf(ewins):null;
-  return `<div class="label">일시정지 시간<small>${own?'지금부터 또는 직접 입력':'이 시간대엔 모든 학생 외출 불가'}</small></div>`+
+  return `<div class="label">타임 아웃 시간<small>${own?'지금부터 또는 직접 입력':'이 시간대엔 모든 학생 외출 불가'}</small></div>`+
    (own?`<div class="chips qd"><button type="button" class="chip" data-qd="30">30분</button><button type="button" class="chip" data-qd="60">1시간</button><button type="button" class="chip" data-qd="120">2시간</button><button type="button" class="chip" data-qd="180">3시간</button></div>`:'')+
    (l&&l.k?`<div class="wprev">지금 ${remTxt(l.k)}</div>`:'')+
-   (ewins.length?ewins.map((w,i)=>`<div class="wrow"><div class="wt">${wTxt(w)}</div><button type="button" class="stepper-btn minus" data-wd="${i}" aria-label="삭제">−</button></div>`).join(''):`<div class="hint" style="margin:0 0 10px">${own?'시간을 정해야 일시정지할 수 있어요':'설정된 시간대가 없어요'}</div>`)+
+   (ewins.length?ewins.map((w,i)=>`<div class="wrow"><div class="wt">${wTxt(w)}</div><button type="button" class="stepper-btn minus" data-wd="${i}" aria-label="삭제">−</button></div>`).join(''):`<div class="hint" style="margin:0 0 10px">${own?'시간을 정해야 타임 아웃할 수 있어요':'설정된 시간대가 없어요'}</div>`)+
    `<div class="wadd"><input type="time" id="wS" value="22:00"><input type="time" id="wE" value="06:00"><button type="button" class="stepper-btn plus" id="wAdd" aria-label="추가">＋</button></div>`;
 }
 function loadStudents(){return api({action:'list'},'/api/students').then(j=>{students=j.students||[];glob=j.global||{wins:[],hist:[]};renderStudents();renderGlobal()})}
@@ -571,7 +579,7 @@ function _renderStudents(){
   $('stCnt').textContent=students.length+'명';
   $('stRows').innerHTML=rows.length?rows.map(r=>{const s=stState(r),id=esc(r.id);
     return `<div class="stu${s.c?' '+s.c:''}${s.lock?' lock':''}" data-k="${id}"${s.lock?` data-sa="state" data-id="${id}"`:''}>`+
-      `<div class="stu-img"><svg class="stu-sil" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4.2"/><path d="M3.5 22c0-4.9 3.8-8 8.5-8s8.5 3.1 8.5 8z"/></svg><div class="stu-ov"><span class="stu-nm">${esc(r.name||'이름 없음')}</span>${r.mgr?`<span class="stu-mg">${esc(r.mgr)}</span>`:''}</div></div>`+
+      `<div class="stu-img"><svg class="stu-sil" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4.2"/><path d="M3.5 22c0-4.9 3.8-8 8.5-8s8.5 3.1 8.5 8z"/></svg><div class="stu-ov"><span class="stu-nm">${esc(r.name||'이름 없음')}</span>${r.mgr?(isUnk(r.mgr)?`<span class="stu-mg ic" aria-label="잘 모름">${unknownSvg}</span>`:`<span class="stu-mg">${esc(mgPlain(r.mgr))}</span>`):''}</div></div>`+
       (s.c?`<div class="stu-st">${s.ic||''}<span>${esc(s.txt)}</span></div>`:'')+
       (s.lock?'':`<div class="stu-btns">`+
         `<button type="button" class="rbtn del" data-sa="del" data-id="${id}" aria-label="학생 삭제">${I_DEL}</button>`+
@@ -642,17 +650,17 @@ const I_YEL='<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6.5" y="3" wid
 function banSum(h){
   h=h||[];const nb=h.filter(x=>x.a==='banned').length,np=h.filter(x=>x.a==='paused').length;
   const row=(ic,t,n,c)=>`<div class="bsum ${c}">${ic}<span class="bsum-t">${t}</span><b>${n}번</b></div>`;
-  return `<div class="bsum-wrap">${row(I_RED,'영구 밴',nb,'red')}${row(I_YEL,'일시정지',np,'yel')}</div>`;
+  return `<div class="bsum-wrap">${row(I_RED,'영구 밴',nb,'red')}${row(I_YEL,'타임 아웃',np,'yel')}</div>`;
 }
 function stLog(r){
   if(stTab==='ban')return banSum(r.hist);
   const l=(r.logs||[]).slice().reverse();
   return l.length?l.map(x=>logRow(KL[x.k]||x.k,x.d,x.t)).join(''):'<div class="empty">기록이 없어요</div>';
 }
-/* 밴 관리: 상태(정상/일시정지/차단) + 개별 외출 제한 시간 */
+/* 밴 관리: 상태(정상/타임 아웃/차단) + 개별 외출 제한 시간 */
 const ST_OPT=[
   {v:'active',t:'정상',d:'평소처럼 외출을 제출할 수 있어요',i:'<circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.7 2.7L16 9.5"/>'},
-  {v:'paused',t:'일시정지',d:'정한 시간 동안만 외출이 금지돼요',i:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>'},
+  {v:'paused',t:'타임 아웃',d:'정한 시간 동안만 외출이 금지돼요',i:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>'},
   {v:'banned',t:'영구 밴',d:'해제할 때까지 외출이 금지돼요',i:'<circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/>'}
 ];
 /* 슬라이드 탭: index.html의 moveTabHighlight와 같은 방식 */
@@ -676,8 +684,8 @@ function placeTabs(id){
   const bg=t.querySelector('.purpose-bg'),sel=t.querySelector('.ptab.sel');
   bg.style.transition='none';moveTabHighlight(sel,bg);void bg.offsetWidth;bg.style.transition='';
 }
-/* 일시정지·영구 밴 상태에서 누르면 현재 상태 + 해제 버튼 */
-/* 전체 해제: 전체 밴을 풀고, 개별 일시정지·영구 밴 학생도 모두 정상으로 되돌림 */
+/* 타임 아웃·영구 밴 상태에서 누르면 현재 상태 + 해제 버튼 */
+/* 전체 해제: 전체 밴을 풀고, 개별 타임 아웃·영구 밴 학생도 모두 정상으로 되돌림 */
 function releaseAll(){
   const rest=students.filter(r=>(r.status&&r.status!=='active')||(r.wins&&r.wins.length));
   return api({action:'setglobal',wins:[]},'/api/students')
@@ -691,14 +699,14 @@ function viewState(id){
   const forever=useG?isForever(glob.wins):r.status==='banned';
   const ws=forever?[]:(useG?glob.wins:(r.wins||[])).filter(w=>w.s!==w.e);
   const l=ws.length?liftOf(ws):null;
-  const title=forever?'영구 밴 중':(l?'일시정지 중':'일시정지 설정됨');
+  const title=forever?'영구 밴 중':(l?'타임 아웃 중':'타임 아웃 설정됨');
   const sub=forever?(useG?'모든 학생의 외출이 금지돼요':'해제할 때까지 외출이 금지돼요'):(l?remTxt(l.k):(ws.length?'다음 시작 '+nextStart(ws):''));
   edit={t:'r',g:useG,id:r?r.id:null};
   $('shTitle').textContent=useG?'전체 밴 상태':'밴 상태';
   $('shBody').innerHTML=
    (r?`<div class="fld sp"><div class="ava">${esc((r.name||'?').trim().charAt(0))}</div><div class="sp-t"><b>${esc(r.name||'이름 없음')}</b><small>${mgLine(r)}${useG?(r.mgr?' · ':'')+'전체 밴 적용 중':''}</small></div></div>`:'')+
    `<div class="fld"><div class="stbox${forever?' ban':''}">${forever?I_STBAN:I_STPAUSE}<div><b>${title}</b>${sub?`<small>${esc(sub)}</small>`:''}</div></div></div>`+
-   (ws.length?`<div class="fld"><div class="label">일시정지 시간</div>${ws.map(w=>`<div class="wrow"><div class="wt">${wTxt(w)}</div></div>`).join('')}</div>`:'');
+   (ws.length?`<div class="fld"><div class="label">타임 아웃 시간</div>${ws.map(w=>`<div class="wrow"><div class="wt">${wTxt(w)}</div></div>`).join('')}</div>`:'');
   openSheet(useG?'전체 해제':'해제');
 }
 function editStudent(id){
@@ -728,8 +736,8 @@ function askDelStudent(id){
   $('dlOv').classList.add('show');$('dl').classList.add('show');
 }
 const G_OPT=[
-  {v:'none',t:'해제',d:'모든 학생이 정상으로 돌아와요 (개별 일시정지·영구 밴도 함께 풀려요)',i:'<circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.7 2.7L16 9.5"/>'},
-  {v:'time',t:'일시정지',d:'정한 시간대에는 모든 학생의 외출이 금지돼요',i:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>'},
+  {v:'none',t:'해제',d:'모든 학생이 정상으로 돌아와요 (개별 타임 아웃·영구 밴도 함께 풀려요)',i:'<circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.7 2.7L16 9.5"/>'},
+  {v:'time',t:'타임 아웃',d:'정한 시간대에는 모든 학생의 외출이 금지돼요',i:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>'},
   {v:'forever',t:'영구 밴',d:'해제할 때까지 모든 학생의 외출이 금지돼요',i:'<circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/>'}
 ];
 function editGlobal(){
@@ -807,10 +815,10 @@ $('shOk').onclick=()=>{
     let effW;
     if(isG){
       effW=stSel==='forever'?[{s:'00:00',e:'00:00'}]:stSel==='time'?ewins:[];
-      if(stSel==='time'&&!effW.length){toast('일시정지 시간을 추가해주세요');return}
+      if(stSel==='time'&&!effW.length){toast('타임 아웃 시간을 추가해주세요');return}
     }else{
       effW=stSel==='paused'?ewins:[];
-      if(stSel==='paused'&&!effW.length){toast('일시정지 시간을 정해주세요');return}
+      if(stSel==='paused'&&!effW.length){toast('타임 아웃 시간을 정해주세요');return}
     }
     const wc=JSON.stringify(effW)!==JSON.stringify(r?r.wins||[]:[]);
     if(!r||(isG?!wc:(r.status===stSel&&!wc))){closeSheet();return}
