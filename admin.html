@@ -110,6 +110,29 @@ input:focus{background:var(--card);border-color:var(--blue-main)}
 .bsum b{font-size:18px;font-weight:800;color:#191f28}
 .bsum.red b{color:#f04452}
 .bsum.yel b{color:#9a5b00}
+.arow{padding:9px 0;border-bottom:1px solid var(--line)}
+.arow:last-child{border-bottom:0}
+.arow-h{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:12.5px;font-weight:500;font-variant-numeric:tabular-nums}
+.anode{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.anode svg{width:12px;height:12px}
+.anode.out{background:var(--blue-light);color:var(--blue-main)}
+.anode.back{background:var(--error-bg);color:var(--error)}
+.anode.late{background:#fff3cf;color:#9a5b00}
+.arow-t{margin:3px 0 0 32px;font-size:14.5px;font-weight:700;color:var(--ink);word-break:break-all}
+.arow-t span{font-weight:500;color:var(--muted)}
+.lg-box{overflow:hidden}
+.dn-rv{display:grid;grid-template-rows:1fr;opacity:1;transition:grid-template-rows .4s cubic-bezier(.2,.8,.2,1),opacity .3s ease}
+.dn-rv.off{grid-template-rows:0fr;opacity:0;pointer-events:none}
+.dn-rv>div{overflow:hidden;min-height:0}
+.dnav{display:flex;align-items:center;justify-content:space-between;padding:0 0 8px}
+.dbtn{width:44px;height:36px;border:0;border-radius:12px;background:var(--gray-fill);color:var(--ink);display:flex;align-items:center;justify-content:center;cursor:pointer;font-family:inherit;transition:transform .3s cubic-bezier(.2,1.3,.4,1),opacity .25s ease,background-color .25s ease}
+.dbtn svg{width:18px;height:18px}
+.dbtn:active:not(:disabled){transform:scale(.9)}
+.dbtn:disabled{opacity:.3;cursor:default}
+.dlbl{flex:1;min-height:36px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;font-size:15px;font-weight:700;color:var(--ink);line-height:1.25}
+.dlbl small{display:block;font-size:11.5px;font-weight:500;color:var(--muted);margin-top:1px}
+.lg-in{animation:lgIn .38s cubic-bezier(.2,.8,.2,1) both}
+@keyframes lgIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 .empty{padding:20px;text-align:center;color:var(--muted);font-size:14px;font-weight:500;grid-column:1/-1}
 
 /* 학생 관리 헤더: [제목] ........ [전체 밴] [🔎 검색…] */
@@ -558,6 +581,22 @@ function stState(r){
   return{c:'',txt:'정상'};
 }
 const logRow=(h,d,t)=>`<div style="padding:6px 0;border-bottom:1px solid var(--line)"><b>${h}</b> <span style="color:var(--muted)">${fmt(t)}</span>${d?`<div style="color:var(--muted)">${esc(d)}</div>`:''}</div>`;
+/* 활동 기록: index.html 완료 화면과 같은 화살표 아이콘 · 아이콘 (시간) / 외출(사유) */
+const A_ICON={
+  out:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="12" x2="20" y2="12"/><polyline points="14 6 20 12 14 18"/></svg>',
+  back:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="20" y1="12" x2="4" y2="12"/><polyline points="10 6 4 12 10 18"/></svg>',
+  late:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><path d="M12 7.5V12l3 2"/></svg>'
+};
+function actReason(k,d){
+  d=String(d||'');
+  if(k==='out')return d.split(' · ').filter(x=>x&&!/^복귀예정/.test(x)).join(' · ');
+  if(k==='late')return d.replace(/^사유:\s*/,'');
+  return '';
+}
+function actRow(x){
+  const k=A_ICON[x.k]?x.k:'out',why=actReason(x.k,x.d);
+  return `<div class="arow"><div class="arow-h"><span class="anode ${k}">${A_ICON[k]}</span>${fmt(x.t)}</div><div class="arow-t">${KL[x.k]||esc(x.k)}${why?`<span>(${esc(why)})</span>`:''}</div></div>`;
+}
 const histHtml=h=>{h=(h||[]).slice().reverse();return h.length?h.map(l=>logRow(HL[l.a]||l.a,l.d,l.t)).join(''):'<div class="empty">기록이 없어요</div>'};
 function winInner(){
   const own=edit&&edit.t==='t',l=own&&ewins.length?liftOf(ewins):null;
@@ -652,10 +691,28 @@ function banSum(h){
   const row=(ic,t,n,c)=>`<div class="bsum ${c}">${ic}<span class="bsum-t">${t}</span><b>${n}번</b></div>`;
   return `<div class="bsum-wrap">${row(I_RED,'영구 밴',nb,'red')}${row(I_YEL,'타임 아웃',np,'yel')}</div>`;
 }
+/* 활동 기록 날짜 이동: 0 = 현재(오늘), 1 = 하루 전, 2 = 이틀 전 … */
+let stDay=0;
+const dayStart=n=>{const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-n);return d.getTime()};
+const actLogs=r=>(r.logs||[]).filter(x=>x.k!=='register');   // 등록은 제외
+function dayLogs(r){const a=dayStart(stDay),b=stDay?dayStart(stDay-1):Infinity;return actLogs(r).filter(x=>x.t>=a&&x.t<b)}
+const hasEarlier=r=>actLogs(r).some(x=>x.t<dayStart(stDay));
+const dayName=n=>n===0?'현재':n===1?'하루 전':n===2?'이틀 전':n+'일 전';
 function stLog(r){
   if(stTab==='ban')return banSum(r.hist);
-  const l=(r.logs||[]).slice().reverse();
-  return l.length?l.map(x=>logRow(KL[x.k]||x.k,x.d,x.t)).join(''):'<div class="empty">기록이 없어요</div>';
+  const l=dayLogs(r);   // 오래된 순(맨 아래가 최신)
+  return l.length?l.map(actRow).join(''):'<div class="empty">'+(stDay?'이 날은 기록이 없어요':'오늘은 아직 기록이 없어요')+'</div>';
+}
+function dnavHtml(r){
+  const I_L='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 6 9 12 15 18"/></svg>';
+  const I_R='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg>';
+  return `<div class="dn-rv${stTab==='act'?'':' off'}" id="dnRv"><div><div class="dnav"><button type="button" class="dbtn" id="dnPrev" aria-label="이전 날" ${hasEarlier(r)?'':'disabled'}>${I_L}</button><div class="dlbl" id="dnLbl">${dayLbl()}</div><button type="button" class="dbtn" id="dnNext" aria-label="다음 날" ${stDay>0?'':'disabled'}>${I_R}</button></div></div></div>`;
+}
+function dayLbl(){const d=new Date(dayStart(stDay));return dayName(stDay)+(stDay?'<small>'+(d.getMonth()+1)+'/'+d.getDate()+'</small>':'')}
+function syncDnav(r){
+  const l=$('dnLbl'),p=$('dnPrev'),n=$('dnNext');if(!l)return;
+  l.innerHTML=dayLbl();p.disabled=!hasEarlier(r);n.disabled=stDay<=0;
+  const rv=$('dnRv');if(rv)rv.classList.toggle('off',stTab!=='act');
 }
 /* 밴 관리: 상태(정상/타임 아웃/차단) + 개별 외출 제한 시간 */
 const ST_OPT=[
@@ -720,14 +777,25 @@ function editStudent(id){
   placeTabs();openSheet();
 }
 /* 기록 조회: 활동 기록 / 밴 기록 */
+const logBottom=()=>{const b=$('shBody');if(b)b.scrollTop=b.scrollHeight};
+function swapLog(html){
+  const b=$('stLog');if(!b)return;
+  const h0=b.offsetHeight;
+  clearTimeout(b._t);b.style.transition='none';b.style.height=h0+'px';
+  b.innerHTML='<div class="lg-in">'+html+'</div>';
+  const h1=b.scrollHeight;void b.offsetWidth;
+  b.style.transition='height .42s cubic-bezier(.2,.8,.2,1)';b.style.height=h1+'px';
+  logBottom();
+  b._t=setTimeout(()=>{b.style.transition='';b.style.height='';logBottom()},460);
+}
 function viewLogs(id){
   const r=students.find(x=>x.id===id);if(!r)return;
-  edit={t:'l',id};stTab='act';
+  edit={t:'l',id};stTab='act';stDay=0;
   $('shTitle').textContent=(r.name||'학생')+' 기록';
   $('shBody').innerHTML=
    (r.mgr?`<div class="fld sp-t" style="padding-top:4px;flex-direction:row;align-items:center">${mgLine(r)}</div>`:'')+
-   `<div class="fld"><div class="purpose-scroll-wrap" style="padding:4px;margin-bottom:10px"><div class="purpose-tabs" id="stTab"><div class="purpose-bg"></div><button type="button" class="ptab sel" data-v="act"><span class="ptab-label">활동 기록</span></button><button type="button" class="ptab" data-v="ban"><span class="ptab-label">밴 기록</span></button></div></div><div id="stLog" style="font-size:13.5px;font-weight:500;line-height:1.5">${stLog(r)}</div></div>`;
-  placeTabs('stTab');openSheet();
+   `<div class="fld"><div class="purpose-scroll-wrap" style="padding:4px;margin-bottom:10px"><div class="purpose-tabs" id="stTab"><div class="purpose-bg"></div><button type="button" class="ptab sel" data-v="act"><span class="ptab-label">활동 기록</span></button><button type="button" class="ptab" data-v="ban"><span class="ptab-label">밴 기록</span></button></div></div>${dnavHtml(r)}<div id="stLog" class="lg-box" style="font-size:13.5px;font-weight:500;line-height:1.5"><div class="lg-in">${stLog(r)}</div></div></div>`;
+  placeTabs('stTab');openSheet();logBottom();
 }
 function askDelStudent(id){
   const r=students.find(x=>x.id===id);if(!r)return;
@@ -756,8 +824,14 @@ $('shBody').addEventListener('click',e=>{
   if(c){const O=edit&&edit.t==='g'?G_OPT:ST_OPT;stSel=c.dataset.v;const tabs=$('stAct');tabs.querySelectorAll('.ptab').forEach(x=>x.classList.toggle('sel',x===c));tabs.dataset.tone=TONE[stSel]||'';moveTabHighlight(c,tabs.querySelector('.purpose-bg'));$('stDesc').textContent=O.find(o=>o.v===stSel).d;$('wReveal').classList.toggle('open',stSel==='paused'||stSel==='time');return}
   const qd=e.target.closest('[data-qd]');
   if(qd){const n=kstMin();ewins=[{s:hm(n),e:hm(n+ +qd.dataset.qd)}];$('wBox').innerHTML=winInner();return}
+  const dn=e.target.closest('#dnPrev,#dnNext');
+  if(dn&&edit&&edit.t==='l'){
+    if(dn.disabled)return;
+    const r=students.find(x=>x.id===edit.id)||{};
+    stDay=Math.max(0,stDay+(dn.id==='dnPrev'?1:-1));
+    syncDnav(r);swapLog(stLog(r));return}
   const tb=e.target.closest('#stTab .ptab');
-  if(tb&&edit){stTab=tb.dataset.v;const tt=$('stTab');tt.querySelectorAll('.ptab').forEach(x=>x.classList.toggle('sel',x===tb));moveTabHighlight(tb,tt.querySelector('.purpose-bg'));$('stLog').innerHTML=stLog(students.find(x=>x.id===edit.id)||{});return}
+  if(tb&&edit){stTab=tb.dataset.v;const tt=$('stTab');tt.querySelectorAll('.ptab').forEach(x=>x.classList.toggle('sel',x===tb));moveTabHighlight(tb,tt.querySelector('.purpose-bg'));const r=students.find(x=>x.id===edit.id)||{};syncDnav(r);swapLog(stLog(r));return}
   const wd=e.target.closest('[data-wd]');
   if(wd){ewins.splice(+wd.dataset.wd,1);$('wBox').innerHTML=winInner();return}
   if(e.target.closest('#wAdd')){
