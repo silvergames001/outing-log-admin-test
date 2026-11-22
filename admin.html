@@ -74,7 +74,7 @@ header.drop>*{animation:dropInTop .6s var(--toss-sheet) backwards}
 .cardshine{animation:cardSweep 4.5s ease-in-out infinite}
 @keyframes cardSweep{0%,60%{transform:translateX(-120px) skewX(-20deg)}85%,100%{transform:translateX(240px) skewX(-20deg)}}
 
-input[type=text],input[type=password]{width:100%;background:var(--gray-fill);border:1px solid transparent;border-radius:14px;padding:18px 16px;font-size:16px;font-family:inherit;color:var(--ink);font-weight:500;transition:border-color .5s ease,background-color .5s ease}
+input[type=text],input[type=password],input[type=time]{width:100%;background:var(--gray-fill);border:1px solid transparent;border-radius:14px;padding:18px 16px;font-size:16px;font-family:inherit;color:var(--ink);font-weight:500;transition:border-color .5s ease,background-color .5s ease}
 input:focus{background:var(--card);border-color:var(--blue-main)}
 ::placeholder{color:#b0b8c1;font-weight:500}
 
@@ -96,6 +96,8 @@ input:focus{background:var(--card);border-color:var(--blue-main)}
 .mgr-item .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .mgr-item .nm small{display:block;font-size:12.5px;color:var(--muted);font-weight:500;margin-top:2px;overflow:hidden;text-overflow:ellipsis}
 .tag{flex-shrink:0;padding:4px 7px;border-radius:7px;background:var(--blue-light);color:var(--blue-main);font-size:12px;font-weight:700}
+.tag.ban{background:var(--error-bg);color:var(--error)}
+.chip.sel.r{background:var(--error-bg);color:var(--error)}
 .tag.off{background:var(--gray-fill);color:var(--muted)}
 .stepper-btn{flex:0 0 auto;width:44px;height:44px;display:flex;align-items:center;justify-content:center;background:var(--gray-fill);border:1px solid transparent;border-radius:14px;font-size:26px;font-weight:700;line-height:1;color:var(--ink);cursor:pointer;font-family:inherit}
 .stepper-btn.minus{color:var(--error)}
@@ -132,8 +134,8 @@ input:focus{background:var(--card);border-color:var(--blue-main)}
 .latelink{width:fit-content;background:transparent;border:none;border-radius:10px;color:var(--muted);font-size:14px;font-weight:600;padding:6px 12px;cursor:pointer;font-family:inherit}
 .latelink:active,.latelink.pressed{background-color:rgba(0,0,0,.12)!important}
 .latelink.out{color:var(--ink)}
-.latelink.logout{background:var(--error);color:#ffe3e5;padding:8px 14px;font-weight:700}
-.latelink.logout:active,.latelink.logout.pressed{background-color:var(--error)!important}
+.latelink.logout{background:var(--error-bg);color:var(--error);padding:7px 11px;border-radius:8px;font-size:13px;font-weight:700}
+.latelink.logout:active,.latelink.logout.pressed{background-color:var(--error-bg)!important}
 .dirty-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--error);margin-left:8px;vertical-align:middle;opacity:0;transition:opacity .3s}
 .dirty .dirty-dot{opacity:1}
 
@@ -213,6 +215,17 @@ input:focus{background:var(--card);border-color:var(--blue-main)}
     <button type="button" class="stepper-btn plus wide" id="addSheet">＋ 스프레드시트 추가</button>
     <p class="hint">'사용 중'인 시트에서 외출 기록을 조회해요. 시트는 '링크가 있는 모든 사용자 – 뷰어'로 공유되어 있어야 해요.</p>
   </div>
+  <div>
+    <div class="label">전체 외출 제한</div>
+    <div class="list" id="gRow"></div>
+    <p class="hint">설정한 시간에는 모든 학생이 외출을 제출할 수 없어요. 복귀 기록은 항상 가능해요. 변경은 바로 적용돼요.</p>
+  </div>
+  <div>
+    <div class="label">학생 관리<small id="stCnt"></small></div>
+    <input type="text" id="stQ" placeholder="이름 · 매니저 검색" autocomplete="off">
+    <div class="list" id="stRows" style="margin-top:8px"></div>
+    <p class="hint">학생이 정보를 등록하거나 외출하면 여기에 자동으로 추가돼요. 상태·제한 시간 변경은 저장하기 없이 바로 적용돼요.</p>
+  </div>
   <div class="submitbar" id="saveBar"><button type="button" class="btn-simple submit" id="btnSave">저장하기<span class="dirty-dot"></span></button></div>
 </main>
 
@@ -220,7 +233,7 @@ input:focus{background:var(--card);border-color:var(--blue-main)}
 <div class="bottom-sheet-overlay" id="shOv"></div>
 <div class="bottom-sheet" id="sh" data-overlay="shOv">
   <div class="bs-header"><h3 id="shTitle"></h3></div>
-  <div id="shBody" style="display:flex;flex-direction:column;gap:18px"></div>
+  <div id="shBody" class="mgr-list" style="display:flex;flex-direction:column;gap:18px;max-height:52dvh;overflow-y:auto;overscroll-behavior:contain"></div>
   <button type="button" class="btn-simple submit" id="shOk">확인</button>
 </div>
 
@@ -232,6 +245,17 @@ input:focus{background:var(--card);border-color:var(--blue-main)}
   <div class="cm-actions">
     <button type="button" class="btn-simple cm-btn ghost" id="dlNo">취소</button>
     <button type="button" class="btn-simple submit danger" id="dlYes">삭제</button>
+  </div>
+</div>
+
+<!-- 로그아웃 확인 -->
+<div class="center-modal-overlay" id="loOv"></div>
+<div class="center-modal" id="lo">
+  <div class="cm-title">로그아웃 하시겠습니까?</div>
+  <div class="cm-desc">저장하지 않은 변경사항은 사라져요.</div>
+  <div class="cm-actions">
+    <button type="button" class="btn-simple cm-btn ghost" id="loNo">취소</button>
+    <button type="button" class="btn-simple submit danger" id="loYes">로그아웃</button>
   </div>
 </div>
 
@@ -256,8 +280,8 @@ let cfg={managers:[],sheets:[]}, dirty=false, saving=false, edit=null, delTarget
 let tt;function toast(m){const e=$('toast');e.textContent=m;e.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>e.classList.remove('show'),2000)}
 function shake(e){e.classList.remove('err');void e.offsetWidth;e.classList.add('err');e.addEventListener('animationend',()=>{e.style.transition='background-color .35s ease,border-color .35s ease';e.classList.remove('err');e.addEventListener('transitionend',()=>{e.style.transition=''},{once:true})},{once:true})}
 function shakeModal(e){e.classList.remove('err-shake');void e.offsetWidth;e.classList.add('err-shake');e.addEventListener('animationend',()=>e.classList.remove('err-shake'),{once:true})}
-function api(body){
-  return fetch('/api/config',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify(body)})
+function api(body,url){
+  return fetch(url||'/api/config',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify(body)})
     .then(async r=>{const j=await r.json().catch(()=>({}));if(!r.ok)throw Object.assign(new Error(j.error||'오류가 발생했어요'),{status:r.status});return j});
 }
 function busy(btn,on){btn.disabled=on;btn.classList.toggle('sending',on)}
@@ -287,11 +311,11 @@ function showLogin(){
     document.body.classList.add('is-login');$('loginView').classList.remove('hide');$('pw').value='';return;
   }
   swapViews([$('adminView'),$('hdr')],
-    ()=>{closeSheet();closeDel();document.body.classList.add('is-login')},
+    ()=>{closeSheet();closeDel();closeLogout();document.body.classList.add('is-login')},
     ()=>{$('loginView').classList.remove('hide');$('pw').value=''});
 }
 function load(){
-  return fetch('/api/config',{cache:'no-store'}).then(r=>r.json()).then(c=>{cfg={managers:c.managers||[],sheets:c.sheets||[]};setDirty(false);render()});
+  return fetch('/api/config',{cache:'no-store'}).then(r=>r.json()).then(c=>{cfg={managers:c.managers||[],sheets:c.sheets||[]};setDirty(false);render()}).then(()=>loadStudents().catch(()=>{}));
 }
 function render(){
   $('mCnt').textContent=cfg.managers.length+'명';
@@ -318,7 +342,11 @@ function doLogin(){
 }
 $('btnLogin').onclick=doLogin;
 $('pw').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin()});
-$('btnLogout').onclick=()=>{showLogin()};
+function openLogout(){$('loOv').classList.add('show');$('lo').classList.add('show')}
+function closeLogout(){$('loOv').classList.remove('show');$('lo').classList.remove('show')}
+$('btnLogout').onclick=openLogout;
+$('loNo').onclick=closeLogout;$('loOv').onclick=closeLogout;
+$('loYes').onclick=()=>{closeLogout();showLogin()};
 
 $('btnSave').onclick=()=>{
   if(saving)return;
@@ -330,6 +358,85 @@ $('btnSave').onclick=()=>{
     toast(e.message);if(e.status===401)setTimeout(showLogin,900);
   }).finally(()=>{saving=false;busy($('btnSave'),false)});
 };
+
+/* ---------- 학생 관리 ---------- */
+let students=[],stEdit=null,stSel='active';
+const ST={active:['정상',''],paused:['일시정지',' off'],banned:['차단',' ban']};
+const KL={register:'등록',out:'외출',back:'복귀',late:'지각'};
+const fmt=t=>{if(!t)return'-';const d=new Date(t),p=n=>String(n).padStart(2,'0');return p(d.getMonth()+1)+'/'+p(d.getDate())+' '+p(d.getHours())+':'+p(d.getMinutes())};
+let glob={wins:[],hist:[]},ewins=[],stTab='act';
+const HL={active:'정상으로 변경',paused:'일시정지',banned:'차단',win:'외출 제한 시간 변경',blocked:'외출 시도 차단됨'};
+const CLOCK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>';
+const wTxt=w=>w.s+' ~ '+w.e;
+const logRow=(h,d,t)=>`<div style="padding:6px 0;border-bottom:1px solid var(--line)"><b>${h}</b> <span style="color:var(--muted)">${fmt(t)}</span>${d?`<div style="color:var(--muted)">${esc(d)}</div>`:''}</div>`;
+const histHtml=h=>{h=(h||[]).slice().reverse();return h.length?h.map(l=>logRow(HL[l.a]||l.a,l.d,l.t)).join(''):'<div class="empty">기록이 없어요</div>'};
+function winInner(){
+  return `<div class="label">외출 제한 시간<small>이 시간엔 외출 불가</small></div>`+
+   (ewins.length?ewins.map((w,i)=>`<div class="row" style="margin-bottom:6px"><div style="flex:1;padding:12px;font-size:15.5px;font-weight:600">${wTxt(w)}</div><button type="button" class="stepper-btn minus" data-wd="${i}" aria-label="삭제">−</button></div>`).join(''):'<div class="hint" style="margin:0 0 8px">설정된 시간이 없어요</div>')+
+   `<div class="row"><input type="time" id="wS" value="22:00"><input type="time" id="wE" value="06:00"><button type="button" class="stepper-btn plus" id="wAdd" aria-label="추가">＋</button></div>`;
+}
+function loadStudents(){return api({action:'list'},'/api/students').then(j=>{students=j.students||[];glob=j.global||{wins:[],hist:[]};renderStudents();renderGlobal()})}
+function renderGlobal(){
+  const on=glob.wins.length;
+  $('gRow').innerHTML=`<div class="row"><button type="button" class="mgr-item" id="gBtn"><span class="icon-wrap">${CLOCK}</span><span class="nm">전체 외출 제한<small>${on?esc(glob.wins.map(wTxt).join(', ')):'설정 안 함'}</small></span><span class="tag${on?' ban':' off'}">${on?'적용 중':'없음'}</span></button></div>`;
+}
+function renderStudents(){
+  const q=$('stQ').value.trim().toLowerCase();
+  const rows=students.filter(r=>!q||((r.name||'')+(r.mgr||'')).toLowerCase().includes(q));
+  $('stCnt').textContent=students.length+'명';
+  $('stRows').innerHTML=rows.length?rows.map(r=>{const t=ST[r.status]||ST.active,w=(r.wins||[]).length?' · 제한 '+r.wins.length:'';
+    return `<div class="row"><button type="button" class="mgr-item" data-t="${esc(r.id)}"><span class="ava">${esc(ch(r.name||''))}</span><span class="nm">${esc(r.name||'이름 없음')}<small>${esc(r.mgr||'')} · 최근 ${fmt(r.last)}${w}</small></span><span class="tag${t[1]}">${t[0]}</span></button></div>`}).join('')
+    :'<div class="empty">'+(students.length?'검색 결과가 없어요':'아직 등록된 학생이 없어요')+'</div>';
+}
+$('stQ').addEventListener('input',renderStudents);
+function stLog(r){
+  if(stTab==='ban')return histHtml(r.hist);
+  const l=(r.logs||[]).slice().reverse();
+  return l.length?l.map(x=>logRow(KL[x.k]||x.k,x.d,x.t)).join(''):'<div class="empty">기록이 없어요</div>';
+}
+function editStudent(id){
+  const r=students.find(x=>x.id===id);if(!r)return;
+  edit={t:'t',id};stSel=r.status||'active';stTab='act';ewins=(r.wins||[]).map(w=>({...w}));
+  $('shTitle').textContent=r.name||'학생';
+  $('shBody').innerHTML=
+   `<div class="fld"><div class="label">${esc(r.mgr||'')}<small>등록 ${fmt(r.first)}</small></div></div>`+
+   `<div class="fld"><div class="label">상태</div><div class="chips" id="stAct" style="grid-template-columns:repeat(3,1fr)"><button type="button" class="chip${stSel==='active'?' sel':''}" data-v="active">정상</button><button type="button" class="chip${stSel==='paused'?' sel':''}" data-v="paused">일시정지</button><button type="button" class="chip${stSel==='banned'?' sel r':''}" data-v="banned">차단</button></div></div>`+
+   `<div class="fld" id="wBox">${winInner()}</div>`+
+   `<div class="fld"><div class="chips" id="stTab" style="margin-bottom:8px"><button type="button" class="chip sel" data-v="act">활동 기록</button><button type="button" class="chip" data-v="ban">밴 기록</button></div><div id="stLog" style="font-size:13.5px;font-weight:500;line-height:1.5">${stLog(r)}</div></div>`+
+   `<button type="button" class="stepper-btn minus wide" id="stDel">학생 삭제</button>`;
+  openSheet();
+}
+function editGlobal(){
+  edit={t:'g'};ewins=glob.wins.map(w=>({...w}));
+  $('shTitle').textContent='전체 외출 제한';
+  $('shBody').innerHTML=`<div class="fld" id="wBox">${winInner()}</div><div class="fld"><div class="label">밴 기록<small>${(glob.hist||[]).length}건</small></div><div style="font-size:13.5px;font-weight:500;line-height:1.5">${histHtml(glob.hist)}</div></div>`;
+  openSheet();
+}
+$('shBody').addEventListener('click',e=>{
+  const c=e.target.closest('#stAct .chip');
+  if(c){stSel=c.dataset.v;document.querySelectorAll('#stAct .chip').forEach(x=>{const on=x===c;x.classList.toggle('sel',on);x.classList.toggle('r',on&&stSel==='banned')});return}
+  const tb=e.target.closest('#stTab .chip');
+  if(tb&&edit){stTab=tb.dataset.v;document.querySelectorAll('#stTab .chip').forEach(x=>x.classList.toggle('sel',x===tb));$('stLog').innerHTML=stLog(students.find(x=>x.id===edit.id)||{});return}
+  const wd=e.target.closest('[data-wd]');
+  if(wd){ewins.splice(+wd.dataset.wd,1);$('wBox').innerHTML=winInner();return}
+  if(e.target.closest('#wAdd')){
+    const s=$('wS').value,t=$('wE').value;
+    if(!s||!t||s===t){toast('시작과 종료 시간을 확인해주세요');return}
+    if(ewins.length>=8){toast('최대 8개까지 가능해요');return}
+    if(ewins.some(w=>w.s===s&&w.e===t)){toast('이미 있는 시간이에요');return}
+    ewins.push({s,e:t});$('wBox').innerHTML=winInner();$('wS').value=s;$('wE').value=t;return;
+  }
+  if(e.target.closest('#stDel')&&edit&&edit.t==='t'){
+    const r=students.find(x=>x.id===edit.id);
+    delTarget={isT:true,id:edit.id};
+    $('dlDesc').innerHTML=`<b>${esc(r?r.name:'')}</b> 학생과 기록을 모두 지워요.<br>다시 등록하면 새로 추가돼요.`;
+    $('dlOv').classList.add('show');$('dl').classList.add('show');
+  }
+});
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-t]');if(b){editStudent(b.dataset.t);return}
+  if(e.target.closest('#gBtn'))editGlobal();
+});
 
 /* ---------- 편집 시트 ---------- */
 function openSheet(){ $('shOv').classList.add('show');requestAnimationFrame(()=>$('sh').classList.add('show')) }
@@ -360,6 +467,16 @@ $('shBody').addEventListener('click',e=>{
 });
 $('shOk').onclick=()=>{
   if(!edit)return;
+  if(edit.t==='t'||edit.t==='g'){
+    const isG=edit.t==='g',r=isG?glob:students.find(x=>x.id===edit.id);
+    const wc=JSON.stringify(ewins)!==JSON.stringify(r?r.wins||[]:[]);
+    if(!r||(isG?!wc:(r.status===stSel&&!wc))){closeSheet();return}
+    const body=isG?{action:'setglobal',wins:ewins}:{action:'set',id:edit.id,status:stSel,wins:ewins};
+    busy($('shOk'),true);
+    api(body,'/api/students').then(()=>loadStudents()).then(()=>{closeSheet();toast('적용했어요')})
+      .catch(e=>{toast(e.message);if(e.status===401)setTimeout(showLogin,900)}).finally(()=>busy($('shOk'),false));
+    return;
+  }
   const nameEl=$('fName'),name=nameEl.value.trim();
   if(edit.t==='m'){
     if(!name){shake(nameEl);toast('이름을 입력해주세요');return}
@@ -399,6 +516,12 @@ function closeDel(){$('dlOv').classList.remove('show');$('dl').classList.remove(
 $('dlNo').onclick=closeDel;$('dlOv').onclick=closeDel;
 $('dlYes').onclick=()=>{
   if(!delTarget)return;
+  if(delTarget.isT){
+    const id=delTarget.id;
+    api({action:'remove',id},'/api/students').then(()=>{students=students.filter(x=>x.id!==id);renderStudents();closeDel();closeSheet();toast('삭제했어요')})
+      .catch(e=>{closeDel();toast(e.message)});
+    return;
+  }
   (delTarget.isM?cfg.managers:cfg.sheets).splice(delTarget.i,1);
   setDirty(true);render();closeDel();
 };
