@@ -50,9 +50,25 @@
   var _save = store.save;
   store.save = function (n, m) { _save.call(store, n, m); ping('register', '', n, m); };
 
+  /* 제출 직전에 서버의 최신 밴 상태를 확인 (최대 2.5초 기다리고, 응답이 없으면 그대로 진행) */
+  var verifying = false;
+  function verify() {
+    return Promise.race([ping('check'), new Promise(function (r) { setTimeout(r, 2500); })]);
+  }
   var _post = post;
   post = function (btn, fields, ph, done) {
     if (blocked) { showBlock(blocked); return; }
+    if (verifying) return;
+    verifying = true;
+    try { btn.disabled = true; btn.classList.add('sending'); } catch (e) { }
+    verify().then(function () {
+      verifying = false;
+      try { btn.disabled = false; btn.classList.remove('sending'); } catch (e) { }
+      if (blocked) { try { closeConfirm(); } catch (e) { } showBlock(blocked); return; }
+      go(btn, fields, ph, done);
+    });
+  };
+  function go(btn, fields, ph, done) {
     if (fields[E.mode] === '외출') {
       var w = activeWin();
       if (w) {
@@ -70,9 +86,12 @@
         : ev === 'late' ? '사유: ' + g('lateReason') : '복귀';
       ping(ev, d);
     } catch (e) { }
-  };
+  }
 
   ping('open');
   document.addEventListener('visibilitychange', function () { if (!document.hidden) ping('check'); });
-  setInterval(function () { if (!document.hidden) ping('check'); }, 90000);
+  window.addEventListener('focus', function () { ping('check'); });
+  window.addEventListener('pageshow', function () { ping('check'); });
+  window.addEventListener('online', function () { ping('check'); });
+  setInterval(function () { if (!document.hidden) ping('check'); }, 15000);
 })();
