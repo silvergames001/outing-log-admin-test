@@ -38,6 +38,59 @@ const cleanWins = (a) => (Array.isArray(a) ? a : []).filter(w => w && T.test(w.s
 const fmtWins = (w) => w.length ? w.map(x => x.s + '~' + x.e).join(', ') : '제한 없음';
 const wOf = (g, r) => (g.wins || []).concat((r && r.wins) || []);
 
+// ---- 같은 이름 + 같은 매니저 = 같은 학생 (기기·브라우저가 달라도 한 명으로 취급) ----
+const IDX = 'epx:idx'; // '이름|매니저' -> 대표 id
+const nk = (s) => String(s || '').normalize('NFC').replace(/\s+/g, '').toLowerCase();
+const keyOf = (n, m) => nk(n) + '|' + nk(m);
+const SEV = { active: 0, paused: 1, banned: 2 };
+// 대표 기록 우선순위: 차단된 기록 먼저, 그다음 가장 오래된 기록
+const rank = (a, b) => (SEV[b.status] === 2) - (SEV[a.status] === 2) || (a.first || 0) - (b.first || 0);
+
+async function canon(name, mgr, id, create) {
+  if (!name || !mgr) return { rec: parse(await rc(['HGET', KEY, id])) };
+  const k = keyOf(name, mgr), same = (r) => r && r.name && keyOf(r.name, r.mgr) === k;
+  let cid = await rc(['HGET', IDX, k]);
+  let rec = cid ? parse(await rc(['HGET', KEY, cid])) : null;
+  if (same(rec)) return { rec };
+  // 인덱스가 없거나 깨졌으면 기존 기록(예전에 만들어진 중복 포함)에서 찾는다
+  const cand = (await all()).filter(same).sort(rank);
+  if (cand.length) { await rc(['HSET', IDX, k, cand[0].id]); return { rec: cand[0] }; }
+  if (!create) return { rec: null };
+  // 새 학생: 동시에 들어와도 먼저 선점한 한 기록만 대표가 된다
+  if ((await rc(['HSETNX', IDX, k, id])) !== 1) {
+    cid = await rc(['HGET', IDX, k]);
+    rec = cid ? parse(await rc(['HGET', KEY, cid])) : null;
+    if (same(rec)) return { rec };
+    await rc(['HSET', IDX, k, id]);
+  }
+  return { rec: parse(await rc(['HGET', KEY, id])) };
+}
+
+// 이미 생겨 있는 중복 기록을 하나로 합친다 (기록·밴 내역은 모두 보존)
+async function mergeDupes(list) {
+  const groups = new Map(), gone = new Set();
+  for (const r of list) { if (!r.name || !r.mgr) continue; const k = keyOf(r.name, r.mgr); if (!groups.has(k)) groups.set(k, []); groups.get(k).push(r); }
+  const byT = (a, b) => (a.t || 0) - (b.t || 0);
+  for (const [k, arr] of groups) {
+    if (arr.length < 2) continue;
+    arr.sort(rank);
+    const main = arr[0], rest = arr.slice(1);
+    for (const r of rest) {
+      main.logs = (main.logs || []).concat(r.logs || []);
+      main.hist = (main.hist || []).concat(r.hist || []);
+      main.first = Math.min(main.first || Infinity, r.first || Infinity);
+      main.last = Math.max(main.last || 0, r.last || 0);
+      if ((SEV[r.status] || 0) > (SEV[main.status] || 0)) { main.status = r.status; main.wins = r.wins || []; }
+    }
+    main.logs = main.logs.sort(byT).slice(-100);
+    main.hist = main.hist.sort(byT).slice(-50);
+    await rc(['HSET', KEY, main.id, JSON.stringify(main)]);
+    await rc(['HSET', IDX, k, main.id]);
+    for (const r of rest) { await rc(['HDEL', KEY, r.id]); gone.add(r.id); }
+  }
+  return list.filter((r) => !gone.has(r.id));
+}
+
 module.exports = async (req, res) => {
   res.setHeader('Cache-Control', 'no-store');
   try {
@@ -47,28 +100,30 @@ module.exports = async (req, res) => {
 
     if (b.action === 'ping') {
       if (!/^[\w-]{8,64}$/.test(id)) return res.status(400).json({ error: 'id' });
-      let [rec, g] = await Promise.all([rc(['HGET', KEY, id]).then(parse), rc(['GET', RULES]).then(parse)]);
-      g = g || {};
-      if (b.ev === 'check') return res.status(200).json({ status: rec ? rec.status : 'active', wins: wOf(g, rec) });
+      const name = cut(b.name, 40), mgr = cut(b.mgr, 40), isCheck = b.ev === 'check';
+      const g = (await rc(['GET', RULES]).then(parse)) || {};
+      let { rec } = await canon(name, mgr, id, !isCheck);
+      if (isCheck) return res.status(200).json({ status: rec ? rec.status : 'active', wins: wOf(g, rec) });
       const now = Date.now();
       if (!rec) rec = { id, first: now, status: 'active', logs: [] };
-      if (b.name) rec.name = cut(b.name, 40);
-      if (b.mgr) rec.mgr = cut(b.mgr, 40);
+      // 같은 학생으로 매칭된 경우엔 기존 표기를 유지 (다른 기기의 띄어쓰기·대소문자 차이로 이름이 바뀌지 않게)
+      if (name && mgr && (!rec.name || !rec.mgr || keyOf(rec.name, rec.mgr) !== keyOf(name, mgr))) { rec.name = name; rec.mgr = mgr; }
+      else { if (!rec.name && name) rec.name = name; if (!rec.mgr && mgr) rec.mgr = mgr; }
       rec.last = now;
-      if (b.ev === 'register' && rec.status === 'active' && rec.name) {
+      if ((b.ev === 'register' || b.ev === 'open') && rec.status === 'active' && rec.name) {
         // 같은 이름이 차단돼 있으면 새 기기로 등록해도 차단 유지
-        if ((await all()).some(r => r.id !== id && r.name === rec.name && r.status === 'banned')) rec.status = 'banned';
+        if ((await all()).some(r => r.id !== rec.id && nk(r.name) === nk(rec.name) && r.status === 'banned')) rec.status = 'banned';
       }
       if (b.ev === 'blocked') rec.hist = (rec.hist || []).concat({ t: now, a: 'blocked', d: cut(b.detail, 120) }).slice(-50);
       if (LOG_EV.includes(b.ev)) rec.logs = (rec.logs || []).concat({ t: now, k: b.ev, d: cut(b.detail, 120) }).slice(-100);
-      await rc(['HSET', KEY, id, JSON.stringify(rec)]);
+      await rc(['HSET', KEY, rec.id, JSON.stringify(rec)]);
       return res.status(200).json({ status: rec.status, wins: wOf(g, rec) });
     }
 
     if (!okToken((req.headers.authorization || '').replace('Bearer ', ''))) return res.status(401).json({ error: '다시 로그인해주세요' });
 
     if (b.action === 'list') {
-      const students = (await all()).sort((x, y) => (y.last || 0) - (x.last || 0)).map(r => ({ ...r, logs: (r.logs || []).slice(-30), hist: (r.hist || []).slice(-30) }));
+      const students = (await mergeDupes(await all())).sort((x, y) => (y.last || 0) - (x.last || 0)).map(r => ({ ...r, logs: (r.logs || []).slice(-30), hist: (r.hist || []).slice(-30) }));
       const g = parse(await rc(['GET', RULES])) || {};
       return res.status(200).json({ students, global: { wins: g.wins || [], hist: (g.hist || []).slice(-30) } });
     }
@@ -96,7 +151,12 @@ module.exports = async (req, res) => {
       }
       return res.status(200).json({ ok: true });
     }
-    if (b.action === 'remove') { await rc(['HDEL', KEY, id]); return res.status(200).json({ ok: true }); }
+    if (b.action === 'remove') {
+      const old = parse(await rc(['HGET', KEY, id]));
+      await rc(['HDEL', KEY, id]);
+      if (old && old.name && old.mgr) await rc(['HDEL', IDX, keyOf(old.name, old.mgr)]);
+      return res.status(200).json({ ok: true });
+    }
     return res.status(400).json({ error: 'action' });
   } catch (e) {
     return res.status(500).json({ error: e.message === 'storage' ? 'Redis(Upstash) 연결이 필요해요' : '서버 오류' });
