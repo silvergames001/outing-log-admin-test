@@ -121,7 +121,7 @@ input:focus{background:var(--card);border-color:var(--blue-main)}
 .arow-t{margin:3px 0 0 32px;font-size:14.5px;font-weight:700;color:var(--ink);word-break:break-all}
 .arow-t span{font-weight:500;color:var(--muted)}
 .lg-box{overflow:hidden}
-.dn-rv{display:grid;grid-template-rows:1fr;opacity:1;transition:grid-template-rows .4s cubic-bezier(.2,.8,.2,1),opacity .3s ease}
+.dn-rv{display:grid;grid-template-rows:1fr;opacity:1;transition:grid-template-rows .42s cubic-bezier(.2,.8,.2,1),opacity .3s ease}
 .dn-rv.off{grid-template-rows:0fr;opacity:0;pointer-events:none}
 .dn-rv>div{overflow:hidden;min-height:0}
 .dnav{display:flex;align-items:center;justify-content:space-between;padding:0 0 8px}
@@ -780,13 +780,29 @@ function editStudent(id){
 const logBottom=()=>{const b=$('shBody');if(b)b.scrollTop=b.scrollHeight};
 function swapLog(html){
   const b=$('stLog');if(!b)return;
+  /* 연타해도 현재 높이에서 이어서 움직이도록 진행 중인 전환 정리 */
+  clearTimeout(b._t);
+  if(b._end){b.removeEventListener('transitionend',b._end);b._end=null}
   const h0=b.offsetHeight;
-  clearTimeout(b._t);b.style.transition='none';b.style.height=h0+'px';
+  b.style.transition='none';
+  b.style.height='auto';
   b.innerHTML='<div class="lg-in">'+html+'</div>';
-  const h1=b.scrollHeight;void b.offsetWidth;
-  b.style.transition='height .42s cubic-bezier(.2,.8,.2,1)';b.style.height=h1+'px';
+  /* scrollHeight는 lgIn(translateY)만큼 더 크게 나와서 끝날 때 툭 튀었음 → offsetHeight로 실제 높이만 측정 */
+  const h1=b.offsetHeight;
+  b.style.height=h0+'px';
+  void b.offsetWidth;
+  if(Math.abs(h1-h0)<1){b.style.transition='';b.style.height='';logBottom();return}
+  b.style.transition='height .42s cubic-bezier(.2,.8,.2,1)';
+  b.style.height=h1+'px';
+  const done=()=>{
+    clearTimeout(b._t);
+    b.removeEventListener('transitionend',b._end);b._end=null;
+    b.style.transition='';b.style.height='';logBottom();
+  };
+  b._end=e=>{if(e.target===b&&e.propertyName==='height')done()};
+  b.addEventListener('transitionend',b._end);
+  b._t=setTimeout(done,520);   // transitionend가 안 오는 경우 대비
   logBottom();
-  b._t=setTimeout(()=>{b.style.transition='';b.style.height='';logBottom()},460);
 }
 function viewLogs(id){
   const r=students.find(x=>x.id===id);if(!r)return;
