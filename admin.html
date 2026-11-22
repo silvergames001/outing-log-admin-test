@@ -284,6 +284,7 @@ input:focus{background:var(--card);border-color:var(--blue-main)}
 .reveal>.rv{overflow:hidden;min-height:0}
 .qd{grid-template-columns:repeat(4,1fr);margin-bottom:10px;gap:8px}
 .qd .chip{padding:12px 4px;font-size:14px;font-weight:600}
+#wList{display:flow-root}
 .wrow{display:flex;align-items:center;gap:8px;margin-bottom:8px}
 .wrow .wt{flex:1;min-width:0;background:var(--gray-fill);border-radius:14px;padding:13px 16px;font-size:15.5px;font-weight:600}
 .wadd{display:flex;align-items:center;gap:8px}
@@ -608,6 +609,35 @@ function winList(){
   return (l&&l.k?`<div class="wprev">지금 ${remTxt(l.k)}</div>`:'')+
    (ewins.length?ewins.map((w,i)=>`<div class="wrow"><div class="wt">${wTxt(w)}</div><button type="button" class="stepper-btn minus" data-wd="${i}" aria-label="삭제">−</button></div>`).join(''):`<div class="hint" style="margin:0 0 10px">${own?'시간을 정해야 타임 아웃할 수 있어요':'설정된 시간대가 없어요'}</div>`);
 }
+/* 타임 아웃 시간 목록이 바뀔 때 시트 높이가 확 바뀌지 않고 부드럽게 늘고 줄게 */
+function setWList(){
+  const b=$('wList');if(!b)return;
+  clearTimeout(b._t);
+  if(b._end){b.removeEventListener('transitionend',b._end);b._end=null}
+  const h0=b.offsetHeight;
+  b.style.transition='none';b.style.height='auto';b.style.overflow='';
+  b.innerHTML=winList();
+  const h1=b.offsetHeight;
+  if(Math.abs(h1-h0)<1){b.style.transition='';b.style.height='';return}
+  b.style.overflow='hidden';b.style.height=h0+'px';void b.offsetWidth;
+  b.style.transition='height .42s cubic-bezier(.2,.8,.2,1)';b.style.height=h1+'px';
+  const done=()=>{
+    clearTimeout(b._t);b.removeEventListener('transitionend',b._end);b._end=null;
+    b.style.transition='';b.style.height='';b.style.overflow='';
+  };
+  b._end=e=>{if(e.target===b&&e.propertyName==='height')done()};
+  b.addEventListener('transitionend',b._end);
+  b._t=setTimeout(done,520);
+}
+/* 직접 시간을 추가·삭제하면 위 빠른 선택 탭의 하이라이트만 부드럽게 꺼짐 */
+function clearQd(){
+  qdSel=null;
+  const tt=$('qdTab');if(!tt)return;
+  tt.querySelectorAll('.ptab.sel').forEach(x=>x.classList.remove('sel'));
+  const bg=tt.querySelector('.purpose-bg');
+  bg.style.transition='opacity .25s ease';bg.style.opacity='0';
+  setTimeout(()=>{if(qdSel===null){bg.style.transition='none';bg.style.width='0';bg.style.opacity='';void bg.offsetWidth;bg.style.transition=''}},280);
+}
 function winInner(){
   const own=edit&&edit.t==='t';
   return `<div class="label">타임 아웃 시간</div>`+
@@ -751,6 +781,14 @@ function placeTabs(id){
   bg.style.transition='none';moveTabHighlight(sel,bg);void bg.offsetWidth;bg.style.transition='';
 }
 /* 타임 아웃·영구 밴 상태에서 누르면 현재 상태 + 해제 버튼 */
+/* 전체 영구 밴 중에 한 학생만 해제: 나머지 학생은 개별 영구 밴으로 바꿔 두고, 전체 영구 밴은 풀어서 이 학생만 정상으로 */
+function releaseOne(id){
+  const others=students.filter(x=>x.id!==id&&x.status!=='banned');
+  const keep=(glob.wins||[]).filter(w=>w.s!==w.e);
+  return Promise.all(others.map(x=>api({action:'set',id:x.id,status:'banned',wins:[]},'/api/students')))
+    .then(()=>api({action:'setglobal',wins:keep},'/api/students'))
+    .then(()=>loadStudents());
+}
 /* 전체 해제: 전체 밴을 풀고, 개별 타임 아웃·영구 밴 학생도 모두 정상으로 되돌림 */
 function releaseAll(){
   const rest=students.filter(r=>(r.status&&r.status!=='active')||(r.wins&&r.wins.length));
@@ -761,19 +799,21 @@ function releaseAll(){
 function viewState(id){
   const r=id?students.find(x=>x.id===id):null;
   if(id&&!r)return;
-  const useG=!r||(r.status!=='banned'&&r.status!=='paused');
-  const forever=useG?isForever(glob.wins):r.status==='banned';
+  const own=!r||(r.status!=='banned'&&r.status!=='paused');   // 개별 밴이 없는 상태
+  const gf=!!r&&own&&isForever(glob.wins);                      // 전체 영구 밴 = 학생마다 영구 밴된 상태로 보여줌
+  const useG=own&&!gf;
+  const forever=gf||(useG?isForever(glob.wins):r.status==='banned');
   const ws=forever?[]:(useG?glob.wins:(r.wins||[])).filter(w=>w.s!==w.e);
   const l=ws.length?liftOf(ws):null;
   const title=forever?'영구 밴 중':(l?'타임 아웃 중':'타임 아웃 설정됨');
   const sub=forever?(useG?'모든 학생의 외출이 금지돼요':'해제할 때까지 외출이 금지돼요'):(l?remTxt(l.k):(ws.length?'다음 시작 '+nextStart(ws):''));
-  edit={t:'r',g:useG,id:r?r.id:null};
+  edit={t:'r',g:useG&&!r,gf,id:r?r.id:null};   // 학생을 눌러 연 시트는 그 학생만 해제 (전체 밴은 건드리지 않음)
   $('shTitle').textContent=useG?'전체 밴 상태':'밴 상태';
   $('shBody').innerHTML=
    (r?`<div class="fld sp"><div class="ava">${esc((r.name||'?').trim().charAt(0))}</div><div class="sp-t"><b>${esc(r.name||'이름 없음')}</b><small>${mgLine(r)}${useG?(r.mgr?' · ':'')+'전체 밴 적용 중':''}</small></div></div>`:'')+
    `<div class="fld"><div class="stbox${forever?' ban':''}">${forever?I_STBAN:I_STPAUSE}<div><b>${title}</b>${sub?`<small>${esc(sub)}</small>`:''}</div></div></div>`+
    (ws.length?`<div class="fld"><div class="label">타임 아웃 시간</div>${ws.map(w=>`<div class="wrow"><div class="wt">${wTxt(w)}</div></div>`).join('')}</div>`:'');
-  openSheet(useG?'전체 해제':'해제');
+  openSheet(useG?(r?'개별 밴 해제':'전체 해제'):'해제');
 }
 function editStudent(id){
   const r=students.find(x=>x.id===id);if(!r)return;
@@ -857,7 +897,7 @@ $('shBody').addEventListener('click',e=>{
       bg.style.transition='opacity .25s ease';bg.style.opacity='1';
       setTimeout(()=>{bg.style.transition='';bg.style.opacity=''},300);
     }else moveTabHighlight(qd,bg);
-    $('wList').innerHTML=winList();return}
+    setWList();return}
   const dn=e.target.closest('#dnPrev,#dnNext');
   if(dn&&edit&&edit.t==='l'){
     if(dn.disabled)return;
@@ -867,13 +907,13 @@ $('shBody').addEventListener('click',e=>{
   const tb=e.target.closest('#stTab .ptab');
   if(tb&&edit){stTab=tb.dataset.v;const tt=$('stTab');tt.querySelectorAll('.ptab').forEach(x=>x.classList.toggle('sel',x===tb));moveTabHighlight(tb,tt.querySelector('.purpose-bg'));const r=students.find(x=>x.id===edit.id)||{};syncDnav(r);swapLog(stLog(r));return}
   const wd=e.target.closest('[data-wd]');
-  if(wd){ewins.splice(+wd.dataset.wd,1);qdSel=null;$('wBox').innerHTML=winInner();return}
+  if(wd){ewins.splice(+wd.dataset.wd,1);clearQd();setWList();return}
   if(e.target.closest('#wAdd')){
     const s=$('wS').value,t=$('wE').value;
     if(!s||!t||s===t){toast('시작과 종료 시간을 확인해주세요');return}
     if(ewins.length>=8){toast('최대 8개까지 가능해요');return}
     if(ewins.some(w=>w.s===s&&w.e===t)){toast('이미 있는 시간이에요');return}
-    ewins.push({s,e:t});qdSel=null;$('wBox').innerHTML=winInner();$('wS').value=s;$('wE').value=t;return;
+    ewins.push({s,e:t});clearQd();setWList();return;
   }
 });
 document.addEventListener('click',e=>{
@@ -913,8 +953,11 @@ $('shOk').onclick=()=>{
   if(!edit)return;
   if(edit.t==='l'){closeSheet();return}
   if(edit.t==='r'){
-    const isGl=edit.g;busy($('shOk'),true);
-    (isGl?releaseAll():api({action:'set',id:edit.id,status:'active',wins:[]},'/api/students').then(()=>loadStudents())).then(()=>{closeSheet();toast(isGl?'모두 정상으로 돌렸어요':'해제했어요')})
+    const isGl=edit.g;
+    if(!isGl&&!edit.gf&&edit.id){const r0=students.find(x=>x.id===edit.id);
+      if(r0&&r0.status!=='banned'&&r0.status!=='paused'&&!(r0.wins&&r0.wins.length)){closeSheet();toast('이 학생은 개별 밴이 없어요');return}}
+    busy($('shOk'),true);
+    (isGl?releaseAll():edit.gf?releaseOne(edit.id):api({action:'set',id:edit.id,status:'active',wins:[]},'/api/students').then(()=>loadStudents())).then(()=>{closeSheet();toast(isGl?'모두 정상으로 돌렸어요':'해제했어요')})
       .catch(e=>{toast(e.message);if(e.status===401)setTimeout(showLogin,900)}).finally(()=>busy($('shOk'),false));
     return;
   }
